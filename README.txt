@@ -1,5 +1,16 @@
-The project was built following instructions available at:
+======================================================================================
+									INFO
+======================================================================================
+This project includes the code for searching spinn3r data set on hadoop.
+The code was developed during research internship at Stanford.
 
+Author: Niko
+Mail: niko.colneric@gmail.com
+
+======================================================================================
+								INSTALATION ISTRUCTIONS
+======================================================================================
+The project was built following instructions available at:
 http://hadoopi.wordpress.com/2013/05/25/setup-maven-project-for-hadoop-in-5mn/
 
 NOTE: you have to edit ${HOME}/.m2/settings.xml before the code could be built,
