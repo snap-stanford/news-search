@@ -3,3 +3,8 @@
 .settings/
 input/
 out/
+target/maven-archiver
+target/surefire-reports
+target/classes
+target/surefire
+target/test-classes
