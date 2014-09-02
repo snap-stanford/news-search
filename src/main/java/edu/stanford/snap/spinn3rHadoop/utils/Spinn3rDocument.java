@@ -93,6 +93,10 @@ public class Spinn3rDocument {
     return str.toString();
   }
   
+  /*
+   * Construct the Spinn3rDocument object from multi-line string
+   * stored in hadoop.
+   */
   public Spinn3rDocument (String doc) throws MalformedURLException{
 	  for(String line : doc.split("\n")){
 		  String[] tokens = line.split("\t", 2);

@@ -44,7 +44,7 @@ public class Search extends Configured implements Tool {
 	public int run(String[] args) throws Exception {
 		System.out.println(Arrays.toString(args));
 
-		/** Get donfiguration */
+		/** Get configuration */
 		Configuration conf = new Configuration(true);
 		conf.set("textinputformat.record.delimiter","\n\n");
 
