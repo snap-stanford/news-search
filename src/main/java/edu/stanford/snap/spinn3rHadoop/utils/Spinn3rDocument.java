@@ -44,7 +44,7 @@ public class Spinn3rDocument {
   /*
    * Prints the document in the "full5" multi-line format.
    * We also add languages and the information about garbage text.
-   */
+   * */
   @Override
   public String toString() {
     StringBuffer str = new StringBuffer();
@@ -94,9 +94,9 @@ public class Spinn3rDocument {
   }
   
   /*
-   * Construct the Spinn3rDocument object from multi-line string
-   * stored in hadoop.
-   */
+   * Construct the Spinn3rDocument object from multi-line string.
+   * Used for parsing the documents stored in hadoop.
+   * */
   public Spinn3rDocument (String doc) throws MalformedURLException{
 	  for(String line : doc.split("\n")){
 		  String[] tokens = line.split("\t", 2);
@@ -174,13 +174,21 @@ public class Spinn3rDocument {
 	  }
   }
   
+  /*
+   * Append a language to this document.
+   * */
   public void appendLang(String lang, double prob){
 	  this.langs.add(new Lang(lang, prob));
   }
 
+  
+  /*
+   * Class for storing links about this record.
+   * 
+   * A value of -1 for startPos/length means that the link 
+   * appears in the title, not in the content.
+   * */
   public static class Link {
-    // A value of -1 for startPos/length means that the link appears in the title, not in the
-    // content.
     public int startPos;
     // For the older versions (up to, and incl., full5), this is empty, i.e., null.
     public Integer length;
@@ -204,9 +212,14 @@ public class Spinn3rDocument {
     }
   }
 
+  /*
+   * Class for storing quotes about this record.
+   * 
+   * A value of -1 for startPos/length means that the quote 
+   * appears in the title, not in the content.
+   * */ 
   public static class Quote {
-    // A value of -1 for startPos/length means that the link appears in the title, not in the
-    // content.
+    // 
     public int startPos;
     public int length;
     public String text;
@@ -223,7 +236,9 @@ public class Spinn3rDocument {
     }
   }
   
-  // Class for storing languages about this record
+  /*
+   * Class for storing languages about this record
+   * */ 
   public class Lang {
 	  public String lang;
 	  public double prob;
@@ -238,21 +253,21 @@ public class Spinn3rDocument {
 	  }
   }
   
+  /*
+   * Returns true if document has language whose probability >= 0.8.
+   * */
   public boolean hasProbableLanguage(){
-	  /*
-	   * Returns true if document has language whose probability >= 0.8.
-	   * */
 	  if(this.langs.size() > 0 && this.langs.get(0).prob >= 0.8){
 		  return true;
 	  }
 	  return false;
   }
   
+  /*
+   * Returns the first language if it is probable.
+   * Else it returns null.
+   * */
   public String getProbableLanguage(){
-	  /*
-	   * Returns the first language if it is probable.
-	   * Else it returns null.
-	   * */
 	  if(this.hasProbableLanguage()){
 		  return this.langs.get(0).lang;
 	  }
