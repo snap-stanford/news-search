@@ -23,7 +23,7 @@ public class ParseCLI {
 		 * */
 		Option output = OptionBuilder.withArgName("output")
 				.isRequired()
-				.hasArgs(3)
+				.hasArg()
 				.withDescription("Select the output folder.")
 				.create("output");
 
@@ -50,131 +50,138 @@ public class ParseCLI {
 				.hasArgs(3)
 				.withDescription("Select the content for searching. Possibilities: WEB, FB, TW.")
 				.create("content");
-		/***
-		 * URL
-		 * */
-		Option urlWhiteList = OptionBuilder.withArgName("urlWhiteList")
-				//.isRequired()
-				.hasArgs(10)
-				.withDescription("White list for urls. For document to pass it must match ALL of the white list patterns.")
-				.create("urlWhiteList");
-
-		Option urlBlackList = OptionBuilder.withArgName("urlBlackList")
-				//.isRequired()
-				.hasArgs(10)
-				.withDescription("Black list for urls. For document to pass it can not match ANY of the black list patterns.")
-				.create("urlBlackList");
-
+		
 		/**
 		 * Language
 		 * */
-		Option removeNoLanguage = new Option("removeNoLanguage", "Remove documents that do not have any language detected with probability >= 0.8.");
-
-		Option langWhiteList = OptionBuilder.withArgName("langWhiteList")
+		Option langWL = OptionBuilder.withArgName("langWL")
 				//.isRequired()
 				.hasArgs(10)
-				.withDescription("White list for languages. If present return only documents that match some of the language in this list.")
-				.create("langWhiteList");
+				.withDescription("White List for languages. If present return only documents that match this language are returned. "
+						+ "If several arguments present we return all documents that match any of them.")
+				.create("langWL");
 
-		Option langBlackList = OptionBuilder.withArgName("langBlackList")
+		Option langBL = OptionBuilder.withArgName("langBL")
 				//.isRequired()
 				.hasArgs(10)
-				.withDescription("Black list for languages. If present return only doucuments that do not match ANY of the language in this list.")
-				.create("langBlackList");
+				.withDescription("Black List for languages. If present documents with this language are discarded from results. " +
+								 "If several arguments present all documents that match any of them are discarded.")
+				.create("langBL");
 
-		/**
-		 * Grabled
+		
+		/***
+		 * URL
 		 * */
-		Option removeGarbled = new Option("removeGarbled", "Remove documents that have fraction of usefull characters < 0.8");
-
-		/**
-		 * Versions
-		 * */
-		Option removeVersions = OptionBuilder.withArgName("removeVersions")
+		Option urlWL = OptionBuilder.withArgName("urlWL")
 				//.isRequired()
-				.hasArgs(5)
-				.withDescription("Select versions to remove from search query: A, B, C, D, E")
-				.create("removeVersions");
+				.hasArgs(10)
+				.withDescription("White List for urls. If present documents that match at least one of the patterns are returned.")
+				.create("urlWL");
+
+		Option urlBL = OptionBuilder.withArgName("urlBL")
+				//.isRequired()
+				.hasArgs(10)
+				.withDescription("Black List for urls. If present all documents that match any of the pattern are discarded from search results.")
+				.create("urlBL");
 
 		/**
 		 * Title
 		 * */
-		Option removeEmptyTitle = new Option("removeEmptyTitle", "Remove documents that have empty title");
-
-		Option titleWhiteList = OptionBuilder.withArgName("titleWhiteList")
+		Option titleWL = OptionBuilder.withArgName("titleWL")
 				//.isRequired()
 				.hasArgs(10)
-				.withDescription("White list for titles. For document to pass it must match ALL of the white list patterns.")
-				.create("titleWhiteList");
+				.withDescription("White list for titles. If present just documents that match all patterns are returned. "
+						+ "To implement OR the '|' character should be used within one pattern.")
+				.create("titleWL");
 
-		Option titleBlackList = OptionBuilder.withArgName("titleBlackList")
+		Option titleBL = OptionBuilder.withArgName("titleBL")
 				//.isRequired()
 				.hasArgs(10)
-				.withDescription("Black list for titles. For document to pass it must not match ANY of the black list patterns.")
-				.create("titleBlackList");
+				.withDescription("Black list for titles. If present all documents that match any of the pattern are discarded from search results.")
+				.create("titleBL");
 
 		/**
 		 * Content
 		 * */
-		Option removeEmptyContent = new Option("removeEmptyContent", "Remove documents that have empty content");
-
-		Option contentWhiteList = OptionBuilder.withArgName("contentWhiteList")
+		Option contentWL = OptionBuilder.withArgName("contentWL")
 				//.isRequired()
 				.hasArgs(10)
-				.withDescription("White list for content. For document to pass it must match ALL of the white list patterns.")
-				.create("contentWhiteList");
+				.withDescription("White list for content. If present just documents that match all patterns are returned. "
+						+ "To implement OR the '|' character should be used within one pattern.")
+				.create("contentWL");
 
-		Option contentBlackList = OptionBuilder.withArgName("contentBlackList")
+		Option contentBL = OptionBuilder.withArgName("contentBL")
 				//.isRequired()
 				.hasArgs(10)
-				.withDescription("Black list for content. For document to pass it must not match ANY of the black list patterns.")
-				.create("contentBlackList");
+				.withDescription("Black list for content. If present all documents that match any of the pattern are discarded from search results.")
+				.create("contentBL");
 
 		/**
 		 * Quotes
 		 * */
-		Option removeNoQuotes = new Option("removeNoQuotes", "Remove documents that have no quotes");
-
-		Option quoteWhiteList = OptionBuilder.withArgName("quoteWhiteList")
+		Option quoteWL = OptionBuilder.withArgName("quoteWL")
 				//.isRequired()
 				.hasArgs(10)
-				.withDescription("White list for quotes. For document to pass ALL of the white list patterns should be matched by at least one of its quotes.")
-				.create("quoteWhiteList");
+				.withDescription("White list for quotes. If present return documents for which all patterns are matched to at least one quote.")
+				.create("quoteWL");
 
-		Option quoteBlackList = OptionBuilder.withArgName("quoteBlackList")
+		Option quoteBL = OptionBuilder.withArgName("quoteBL")
 				//.isRequired()
 				.hasArgs(10)
-				.withDescription("Black list for quotes. For document to pass none of the quotes should not match ANY of the black list patterns.")
-				.create("quoteBlackList");
+				.withDescription("Black list for quotes. If present discard documents for which some quote matches some pattern.")
+				.create("quoteBL");
+		
+		/** Remove documents with:
+		 * 		- specific version
+		 * 		- no probable language
+		 * 		- garbled text
+		 * 		- empty title
+		 * 		- empty content
+		 * 		- no quotes
+		 *  */
+		Option removeVersions = OptionBuilder.withArgName("removeVersions")
+				//.isRequired()
+				.hasArgs(5)
+				.withDescription("Select versions which should be removed from search query: A, B, C, D, E")
+				.create("removeVersions");
+		Option removeNoLanguage = new Option("removeNoLanguage", "Remove documents that do not have any language detected with probability >= 0.8.");
+		Option removeGarbled = new Option("removeGarbled", "Remove documents that have fraction of usefull characters < 0.8.");
+		Option removeEmptyTitle = new Option("removeEmptyTitle", "Remove documents that have an empty title.");
+		Option removeEmptyContent = new Option("removeEmptyContent", "Remove documents that have an empty content.");
+		Option removeNoQuotes = new Option("removeNoQuotes", "Remove documents that have no quotes.");
 
 		CommandLine cmd = null;
-		Options options = new Options();	
-
+		Options options = new Options();
 		options.addOption(output);
 		options.addOption(startDate);
 		options.addOption(endDate);
 		options.addOption(content);
-		options.addOption(urlWhiteList);
-		options.addOption(urlBlackList);
+		options.addOption(urlWL);
+		options.addOption(urlBL);
 		options.addOption(removeNoLanguage);
-		options.addOption(langWhiteList);
-		options.addOption(langBlackList);
+		options.addOption(langWL);
+		options.addOption(langBL);
 		options.addOption(removeGarbled);
 		options.addOption(removeVersions);
 		options.addOption(removeEmptyTitle);
-		options.addOption(titleWhiteList);
-		options.addOption(titleBlackList);
+		options.addOption(titleWL);
+		options.addOption(titleBL);
 		options.addOption(removeEmptyContent);
-		options.addOption(contentWhiteList);
-		options.addOption(contentBlackList);
+		options.addOption(contentWL);
+		options.addOption(contentBL);
 		options.addOption(removeNoQuotes);
-		options.addOption(quoteWhiteList);
-		options.addOption(quoteBlackList);
+		options.addOption(quoteWL);
+		options.addOption(quoteBL);
 
 		try {
 			/** Parse */
 			CommandLineParser parser = new BasicParser();
 			cmd = parser.parse(options, args);
+			
+			/** If left unparsed arguments */
+			if(cmd.getArgs().length > 0){
+					throw new ParseException("Some extra arguments that were not parsed: " + cmd.getArgList());
+			}
 
 			/** Check date format and boundaries */
 			SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd'T'HH");
@@ -203,7 +210,7 @@ public class ParseCLI {
 			String [] correctC = {"WEB", "TW", "FB"};
 			for(String c : cmd.getOptionValues("content")){
 				if(!Arrays.asList(correctC).contains(c)){
-					throw new ParseException("Invalid content type!");
+					throw new ParseException("Invalid content type: " + c);
 				} 
 			}
 
@@ -212,7 +219,7 @@ public class ParseCLI {
 			if(cmd.hasOption("removeVersions")){
 				for(String c : cmd.getOptionValues("removeVersions")){
 					if(!Arrays.asList(correctV).contains(c)){
-						throw new ParseException("Invalid removeVersions type!");
+						throw new ParseException("Invalid removeVersions type: " + c);
 					} 
 				}
 			}
@@ -221,33 +228,72 @@ public class ParseCLI {
 			System.out.println("ERROR: "+e.getLocalizedMessage());
 			System.out.println("");
 			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp("search [OUTPUT FOLDER] [OPTIONS]", options);
+			formatter.printHelp("search [OUTPUT FOLDER] [OPTIONS]\n"
+					+ "\nThe main concept here are White and Black lists. For document to pass the search "
+					+ "it must match with (some or all, depeding on attribute) patterns in White list and it "
+					+ "must not match with any of the patterns in Black list. Matching with Black list overrides matching with White list.\n"
+					+ "NOTICE: empty fields are treater separately, not with White lists. For example, if we search "
+					+ "for all documents with language 'en', by default all languages with no language detected will "
+					+ "also be in results. To change this use '-removeNoLanguage' option. Same hold for all other fields ass well.", options);
 			cmd = null;
 		}
 		return cmd;
 	}
+	
+	public static void printArguments(CommandLine in){
+		System.out.println("-output: " + in.getOptionValue("output"));
+		System.out.println("-startDate: " + in.getOptionValue("startDate"));
+		System.out.println("-endDate: " + in.getOptionValue("endDate"));
+		System.out.println("-content: " + (in.getOptionValues("content") !=null ? Arrays.asList(in.getOptionValues("content")) : "null"));
+		System.out.println("-langWL: " + (in.getOptionValues("langWL") !=null ? Arrays.asList(in.getOptionValues("langWL")) : "null"));
+		System.out.println("-langBL: " + (in.getOptionValues("langBL") !=null ? Arrays.asList(in.getOptionValues("langBL")) : "null"));
+		System.out.println("-urlWL: " + (in.getOptionValues("urlWL") !=null ? Arrays.asList(in.getOptionValues("urlWL")) : "null"));
+		System.out.println("-urlBL: " + (in.getOptionValues("urlBL") !=null ? Arrays.asList(in.getOptionValues("urlBL")) : "null"));
+		System.out.println("-titleWL: " + (in.getOptionValues("titleWL") !=null ? Arrays.asList(in.getOptionValues("titleWL")) : "null"));
+		System.out.println("-titleBL: " + (in.getOptionValues("titleBL") !=null ? Arrays.asList(in.getOptionValues("titleBL")) : "null"));
+		System.out.println("-contentWL: " + (in.getOptionValues("contentWL") !=null ? Arrays.asList(in.getOptionValues("contentWL")) : "null"));
+		System.out.println("-contentBL: " + (in.getOptionValues("contentBL") !=null ? Arrays.asList(in.getOptionValues("contentBL")) : "null"));
+		System.out.println("-quoteWL: " + (in.getOptionValues("quoteWL") !=null ? Arrays.asList(in.getOptionValues("quoteWL")) : "null"));
+		System.out.println("-quoteBL: " + (in.getOptionValues("quoteBL") !=null ? Arrays.asList(in.getOptionValues("quoteBL")) : "null"));
+		System.out.println("-removeVersions: " + (in.getOptionValues("removeVersions") !=null ? Arrays.asList(in.getOptionValues("removeVersions")) : "null"));
+		System.out.println("-removeNoLanguage: " + in.hasOption("removeNoLanguage"));
+		System.out.println("-removeGarbled: " + in.hasOption("removeGarbled"));
+		System.out.println("-removeEmptyTitle: " + in.hasOption("removeEmptyTitle"));
+		System.out.println("-removeEmptyContent: " + in.hasOption("removeEmptyContent"));
+		System.out.println("-removeNoQuotes: " + in.hasOption("removeNoQuotes"));
+	}
 
 	public static void main(String [] args){
 		/**
-		-output OUT
-		-startDate 2010-12-13T23
-		-endDate 2013-09-02T17
-		-content WEB FB TW
-		-urlWhiteList "\.com|\.edu" 
-		-urlBlackList "\.co\.uk" 
-		-langWhiteList en 
-		-langBlackList pl 
-		-removeVersions A B C D E 
-		-titleBlackList obama obama ... 
-		-titleWhiteList barack 
-		-contentWhiteList barack 
-		-contentBlackList obama 
-		-quoteWhiteList barack 
-		-quoteBlackList obama
+		 * Sample command line input with all arguments set:
+-output out
+-startDate 2010-12-13T23
+-endDate 2013-09-02T17
+-content WEB FB TW
+-langWL en ru
+-langBL	pl
+-urlWL "\.com " "\.edu" 
+-urlBL "\.co" "\.uk"
+-titleWL '[Oo]bama' '[Bb]arack|[Mm]ichelle'
+-titleBL '[Mm]ccain' 'perry rosenstein'
+-contentWL 'the'
+-contentBL 'this saturday'
+-quoteWL 'in'
+-quoteBL 'politics'
+-removeVersions E
+-removeNoLanguage
+-removeGarbled
+-removeEmptyTitle
+-removeEmptyContent
+-removeNoQuotes
 		 */
-		if (parse(args) != null)
-			System.out.println("All OK!");
+		
+		CommandLine cmd = parse(args);
+		if (cmd != null){
+			printArguments(cmd);
+			System.out.println("\nAll OK!");
+		}
 		else
-			System.out.println("NOT OK!");
+			System.out.println("\nNOT OK!");
 	}
 }
