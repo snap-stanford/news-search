@@ -30,17 +30,17 @@ public class ParseCLI {
 		/***
 		 * Date limitations
 		 * */
-		Option startDate = OptionBuilder.withArgName("startDate")
+		Option start = OptionBuilder.withArgName("start")
 				.isRequired()
 				.hasArg()
-				.withDescription("Set the start date. For 31th of August at 14:00 you write: 2008-31-08:14")
-				.create("startDate");
+				.withDescription("Set the start date and hour. For 31th of August at 14:00 you write: 2008-31-08T14")
+				.create("start");
 
-		Option endDate = OptionBuilder.withArgName("endDate")
+		Option end = OptionBuilder.withArgName("end")
 				.isRequired()
 				.hasArg()
-				.withDescription("Set the end date. Use the same format as for start date.")
-				.create("endDate");
+				.withDescription("Set the end date and hour. Use the same format as for start date.")
+				.create("end");
 
 		/***
 		 * Content
@@ -153,8 +153,8 @@ public class ParseCLI {
 		CommandLine cmd = null;
 		Options options = new Options();
 		options.addOption(output);
-		options.addOption(startDate);
-		options.addOption(endDate);
+		options.addOption(start);
+		options.addOption(end);
 		options.addOption(content);
 		options.addOption(urlWL);
 		options.addOption(urlBL);
@@ -184,26 +184,26 @@ public class ParseCLI {
 			}
 
 			/** Check date format and boundaries */
-			SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd'T'HH");
-			format2.setLenient(false);
-			Date firstDayInData = format2.parse("2008-08-01T00");
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH");
+			format.setLenient(false);
+			Date firstDayInData = format.parse("2008-08-01T00");
 			Date now = new Date();
-			Date startD = format2.parse(cmd.getOptionValue("startDate"));
-			Date endD = format2.parse(cmd.getOptionValue("endDate"));
+			Date startD = format.parse(cmd.getOptionValue("start"));
+			Date endD = format.parse(cmd.getOptionValue("end"));
 			if (startD.before(firstDayInData)){
-				throw new ParseException("StartDate set too early. We collect data from 2008-08-01T00 onwards!");
+				throw new ParseException("start set too early. We collect data from 2008-08-01T00 onwards!");
 			}
 			if (endD.before(firstDayInData)){
-				throw new ParseException("EndDate set too early. We collect data from 2008-08-01T00 onwards!");
+				throw new ParseException("end set too early. We collect data from 2008-08-01T00 onwards!");
 			}
 			if(now.before(startD)){
 				throw new ParseException("StartdDate can not be set after now!");
 			}
 			if(now.before(endD)){
-				throw new ParseException("EndDate can not be set after now!");
+				throw new ParseException("end can not be set after now!");
 			}
 			if (startD.compareTo(endD) >= 0 ){
-				throw new ParseException("StartDate should be before endDate.");
+				throw new ParseException("start should be before end.");
 			}
 
 			/** Check types */
@@ -242,8 +242,8 @@ public class ParseCLI {
 	
 	public static void printArguments(CommandLine in){
 		System.out.println("-output: " + in.getOptionValue("output"));
-		System.out.println("-startDate: " + in.getOptionValue("startDate"));
-		System.out.println("-endDate: " + in.getOptionValue("endDate"));
+		System.out.println("-start: " + in.getOptionValue("start"));
+		System.out.println("-end: " + in.getOptionValue("end"));
 		System.out.println("-content: " + (in.getOptionValues("content") !=null ? Arrays.asList(in.getOptionValues("content")) : "null"));
 		System.out.println("-langWL: " + (in.getOptionValues("langWL") !=null ? Arrays.asList(in.getOptionValues("langWL")) : "null"));
 		System.out.println("-langBL: " + (in.getOptionValues("langBL") !=null ? Arrays.asList(in.getOptionValues("langBL")) : "null"));
@@ -267,8 +267,8 @@ public class ParseCLI {
 		/**
 		 * Sample command line input with all arguments set:
 -output out
--startDate 2010-12-13T23
--endDate 2013-09-02T17
+-start 2010-12-13T23
+-end 2013-09-02T17
 -content WEB FB TW
 -langWL en ru
 -langBL	pl
