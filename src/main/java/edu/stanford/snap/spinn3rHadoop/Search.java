@@ -57,7 +57,7 @@ public class Search extends Configured implements Tool {
 
 		/** Delete output directory if it exists */
 		FileSystem fs = FileSystem.get(conf);
-		fs.delete(new Path(args[1]), true);
+		fs.delete(new Path(cmd.getOptionValue("output")), true);
 
 		/** Job configuration */
 		Job job = Job.getInstance(conf, "HadoopSearch");
