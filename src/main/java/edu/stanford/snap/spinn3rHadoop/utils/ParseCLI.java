@@ -179,10 +179,9 @@ public class ParseCLI {
 			cmd = parser.parse(options, args);
 			
 			/** If left unparsed arguments */
-			// TODO fix
-			//if(cmd.getArgs().length > 0){
-			//		throw new ParseException("Some extra arguments that were not parsed: " + cmd.getArgList());
-			//}
+			if(cmd.getArgs().length > 0){
+					throw new ParseException("Some extra arguments that were not parsed: " + cmd.getArgList());
+			}
 
 			/** Check date format and boundaries */
 			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH");
