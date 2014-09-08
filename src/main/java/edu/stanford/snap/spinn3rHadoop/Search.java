@@ -37,7 +37,7 @@ public class Search extends Configured implements Tool {
 	public static void main(String[] args) throws Exception {
 		
 		/** Check for arguments */
-		CommandLine cmd = ParseCLI.parse(args);
+		cmd = ParseCLI.parse(args);
 		if(cmd == null){
 			System.exit(-1);
 		}
