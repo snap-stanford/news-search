@@ -147,6 +147,7 @@ public class Search extends Configured implements Tool {
 
 		@Override
 		public void setup(Context context){
+			System.err.print("CMD is"+cmd);
 			filter = new DocumentFilter(cmd);
 		}
 
