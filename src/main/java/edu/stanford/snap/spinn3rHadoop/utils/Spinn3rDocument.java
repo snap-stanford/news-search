@@ -64,10 +64,9 @@ public class Spinn3rDocument {
 			str.append("S\t").append(l.toString()).append("\n");
 		}
 		str.append("G\t").append(isGarbled+"\t").append(nonGarbageFraction+"\t").append("\n");
-		if (url != null) {
-			str.append("U\t").append(url).append("\n");
+		if (urlString != null) {
+			str.append("U\t").append(urlString).append("\n");
 		} else {
-			System.err.println("DOC ID:" + docId);
 			throw new IllegalArgumentException("Document has no URL");
 		}
 		if (date != null) {
