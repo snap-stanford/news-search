@@ -42,6 +42,8 @@ public class Search extends Configured implements Tool {
 		if(cmd == null){
 			System.exit(-1);
 		}
+		
+		System.err.println("I AM IN MAIN METHOD!!!");
 
 		/** Run the job */
 		int res = ToolRunner.run(new Configuration(), new Search(), args);
