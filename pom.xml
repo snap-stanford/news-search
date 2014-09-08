@@ -117,7 +117,7 @@
 					</archive>
 				</configuration>
 			</plugin>
-	    
+	    	<!--
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
@@ -131,6 +131,7 @@
 					</descriptorRefs>
 				</configuration>
 			</plugin>
+			-->
 		</plugins>
 	</build>
     
