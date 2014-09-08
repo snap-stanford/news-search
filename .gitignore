@@ -9,4 +9,3 @@ target/surefire-reports
 target/classes
 target/surefire
 target/test-classes
-/target
