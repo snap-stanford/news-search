@@ -3,6 +3,7 @@ package edu.stanford.snap.spinn3rHadoop.utils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Spinn3rDocument {
@@ -101,6 +102,10 @@ public class Spinn3rDocument {
 	public Spinn3rDocument (String doc){
 		for(String line : doc.split("\n")){
 			String[] tokens = line.split("\t", 2);
+			if(tokens.length < 2){
+				System.err.println("THE LINE IS: "+ line);
+				System.err.println("TOKENS ARE: "+ Arrays.asList(tokens));
+			}
 			String type = tokens[0];
 			String value = tokens[1];
 			// DocId
