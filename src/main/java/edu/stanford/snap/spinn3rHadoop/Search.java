@@ -56,6 +56,7 @@ public class Search extends Configured implements Tool {
 		/** Get configuration */
 		Configuration conf = getConf();
 		conf.set("textinputformat.record.delimiter","\n\n");
+		conf.setStrings("args", args);
 
 		/** Delete output directory if it exists */
 		FileSystem fs = FileSystem.get(conf);
@@ -143,11 +144,15 @@ public class Search extends Configured implements Tool {
 	}
 
 	public static class Map extends Mapper<LongWritable, Text, Text, NullWritable> {
+		private CommandLine cmd;
 		private DocumentFilter filter;
+		
 
 		@Override
 		public void setup(Context context){
-			System.err.print("CMD is"+cmd);
+			System.out.println("CMD is"+cmd);
+			System.out.println(Arrays.asList(context.getConfiguration().getStrings("args")));
+			cmd = ParseCLI.parse(context.getConfiguration().getStrings("args"));
 			filter = new DocumentFilter(cmd);
 		}
 
@@ -177,4 +182,6 @@ public class Search extends Configured implements Tool {
 -content WEB FB TW
 -titleWL '[Oo]bama' '[Bb]arack|[Mm]ichelle'
 -titleBL '[Mm]ccain' 'perry rosenstein'
+ 
+-output out -start 2010-01-01T00 -end 2010-01-10T23 -content WEB FB TW -titleWL '[Ss]lovenia'
  * */
