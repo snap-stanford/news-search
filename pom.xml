@@ -114,7 +114,7 @@
       	<configuration>
         	<archive>
           		<manifest>
-            			<mainClass>faustineinsun.com.MainClass</mainClass>
+            			<mainClass>edu.stanford.snap.spinn3rHadoop.Search</mainClass>
           		</manifest>
         	</archive>
         	<descriptorRefs>
