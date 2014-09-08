@@ -37,13 +37,10 @@ public class Search extends Configured implements Tool {
 	public static void main(String[] args) throws Exception {
 		
 		/** Check for arguments */
-		cmd = ParseCLI.parse(args);
-		//ParseCLI.printArguments(cmd);
+		CommandLine cmd = ParseCLI.parse(args);
 		if(cmd == null){
 			System.exit(-1);
 		}
-		
-		System.err.println("I AM IN MAIN METHOD!!!");
 
 		/** Run the job */
 		int res = ToolRunner.run(new Configuration(), new Search(), args);
@@ -144,16 +141,13 @@ public class Search extends Configured implements Tool {
 	}
 
 	public static class Map extends Mapper<LongWritable, Text, Text, NullWritable> {
-		private CommandLine cmd;
+		private CommandLine cmdMap;
 		private DocumentFilter filter;
 		
-
 		@Override
 		public void setup(Context context){
-			System.out.println("CMD is"+cmd);
-			System.out.println(Arrays.asList(context.getConfiguration().getStrings("args")));
-			cmd = ParseCLI.parse(context.getConfiguration().getStrings("args"));
-			filter = new DocumentFilter(cmd);
+			cmdMap = ParseCLI.parse(context.getConfiguration().getStrings("args"));
+			filter = new DocumentFilter(cmdMap);
 		}
 
 		@Override
