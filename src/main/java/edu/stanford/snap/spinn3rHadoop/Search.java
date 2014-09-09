@@ -32,6 +32,11 @@ import edu.stanford.snap.spinn3rHadoop.utils.ParseCLI;
 import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument;
 
 public class Search extends Configured implements Tool {
+	enum ProcessingTime{
+		PARSING,
+		FILTERING
+	}
+	
 	private static CommandLine cmd = null;
 
 	public static void main(String[] args) throws Exception {
@@ -75,7 +80,7 @@ public class Search extends Configured implements Tool {
 		job.setOutputFormatClass(TextOutputFormat.class);
 
 		/** Set input and output path */
-		boolean DEBUG = false;
+		boolean DEBUG = true;
 		if(DEBUG){
 			FileInputFormat.addInputPath(job, new Path("input/web/2008-08/web-2008-08-01T00-00-00Z.txt"));
 		}
@@ -143,6 +148,8 @@ public class Search extends Configured implements Tool {
 	public static class Map extends Mapper<LongWritable, Text, Text, NullWritable> {
 		private CommandLine cmdMap;
 		private DocumentFilter filter;
+		long t1, t2;
+		boolean t;
 		
 		@Override
 		public void setup(Context context){
@@ -156,12 +163,19 @@ public class Search extends Configured implements Tool {
 			/** 
 			 * Parse document.
 			 * */
+			t1 = System.nanoTime();
 			Spinn3rDocument d = new Spinn3rDocument(value.toString());
-
+			t2 = System.nanoTime();
+			context.getCounter(ProcessingTime.PARSING).increment(t2-t1);
+			
 			/**
 			 * Return only those documents that satisfy search conditions
 			 * */ 
-			if (filter.documentSatisfies(d)){
+			t1 = System.nanoTime();
+			t = filter.documentSatisfies(d);
+			t2 = System.nanoTime();
+			context.getCounter(ProcessingTime.FILTERING).increment(t2-t1);
+			if (t){
 				context.write(new Text(d.toString()), NullWritable.get());
 			}
 		}
