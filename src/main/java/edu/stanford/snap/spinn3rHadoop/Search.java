@@ -81,7 +81,7 @@ public class Search extends Configured implements Tool {
 		}
 		else{
 			/** Add all files and than the filter will remove those that should be skipped. */
-			FileInputFormat.addInputPath(job, new Path("/dataset/spinn3r/*/*/*"));
+			FileInputFormat.addInputPath(job, new Path("/dataset/spinn3r2/*/*/*"));
 			FileInputFormat.setInputPathFilter(job, Spinn3rInputFilter.class);
 		}
 		FileOutputFormat.setOutputPath(job, new Path(cmd.getOptionValue("output")));
