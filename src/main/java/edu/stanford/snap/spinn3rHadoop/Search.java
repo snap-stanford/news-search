@@ -80,7 +80,7 @@ public class Search extends Configured implements Tool {
 		job.setOutputFormatClass(TextOutputFormat.class);
 
 		/** Set input and output path */
-		boolean DEBUG = true;
+		boolean DEBUG = false;
 		if(DEBUG){
 			FileInputFormat.addInputPath(job, new Path("input/web/2008-08/web-2008-08-01T00-00-00Z.txt"));
 		}
