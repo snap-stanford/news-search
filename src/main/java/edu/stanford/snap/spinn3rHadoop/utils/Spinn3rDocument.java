@@ -42,6 +42,10 @@ public class Spinn3rDocument {
 			}
 		}
 	}
+	private static String escapeNewLines(String in){
+		return in.replaceAll("\n", " &#10; ");
+	}
+
 
 	/*
 	 * Prints the document in the "full5" multi-line format.
@@ -65,26 +69,26 @@ public class Spinn3rDocument {
 		}
 		str.append("G\t").append(isGarbled+"\t").append(nonGarbageFraction+"\t").append("\n");
 		if (urlString != null) {
-			str.append("U\t").append(urlString).append("\n");
+			str.append("U\t").append(escapeNewLines(urlString)).append("\n");
 		} else {
 			throw new IllegalArgumentException("Document has no URL");
 		}
 		if (date != null) {
-			str.append("D\t").append(date).append("\n");
+			str.append("D\t").append(escapeNewLines(date)).append("\n");
 		} else {
 			throw new IllegalArgumentException("Document has no date");
 		}
 		if (title != null) {
-			str.append("T\t").append(title).append("\n");
+			str.append("T\t").append(escapeNewLines(title)).append("\n");
 		}
 		if (title_raw != null) {
-			str.append("F\t").append(title_raw).append("\n");
+			str.append("F\t").append(escapeNewLines(title_raw)).append("\n");
 		}
 		if (content != null) {
-			str.append("C\t").append(content).append("\n");
+			str.append("C\t").append(escapeNewLines(content)).append("\n");
 		}
 		if (content_raw != null) {
-			str.append("H\t").append(content_raw).append("\n");
+			str.append("H\t").append(escapeNewLines(content_raw)).append("\n");
 		}
 		for (Link l : links) {
 			str.append("L\t").append(l.toString()).append("\n");
@@ -111,10 +115,12 @@ public class Spinn3rDocument {
 			// DocId
 			if (type.equals("I")){
 				this.docId = value;
+				continue;
 			}
 			// Version
 			else if (type.equals("V")){
 				this.version = Spinn3rVersion.valueOf(value);
+				continue;
 			}
 			// Languages
 			else if (type.equals("S")){
@@ -122,12 +128,14 @@ public class Spinn3rDocument {
 				String lng = split[0];
 				double prob = Double.valueOf(split[1]);
 				this.langs.add(new Lang(lng, prob));
+				continue;
 			}
 			// Garbled info
 			else if (type.equals("G")){
 				String [] split = value.split("\t", 2);
 				this.isGarbled = Boolean.valueOf(split[0]);
 				this.nonGarbageFraction = Double.valueOf(split[1]);
+				continue;
 			}
 			// Url
 			else if (type.equals("U")){
@@ -136,26 +144,32 @@ public class Spinn3rDocument {
 					this.url = new URL(value);
 				} catch (MalformedURLException e) {
 				}
+				continue;
 			}
 			// Date
 			else if (type.equals("D")){
 				this.date = value;
+				continue;
 			}
 			// Title
 			else if (type.equals("T")){
 				this.title = value;
+				continue;
 			}
 			// Title raw
 			else if (type.equals("F")){
 				this.title_raw = value;
+				continue;
 			}
 			// Content
 			else if (type.equals("C")){
 				this.content = value;
+				continue;
 			}
 			// Content raw
 			else if (type.equals("H")){
 				this.content_raw = value;
+				continue;
 			}
 			// Links
 			else if (type.equals("L")){
@@ -168,6 +182,7 @@ public class Spinn3rDocument {
 					int length = Integer.valueOf(split[1]);
 					this.links.add(new Link(startPos, length, split[2]));
 				}
+				continue;
 			}
 			// Quotes
 			else if (type.equals("Q")){
@@ -176,6 +191,7 @@ public class Spinn3rDocument {
 				int length = Integer.valueOf(split[1]);
 				this.quotes.add(new Quote(startPos, length, split[2]));
 				System.out.print("");
+				continue;
 			}
 			// Unknown value
 			else{
@@ -218,7 +234,7 @@ public class Spinn3rDocument {
 
 		@Override
 		public String toString() {
-			return String.format("%d\t%s\t%s", startPos, length == null ? "" : length, url);
+			return String.format("%d\t%s\t%s", startPos, length == null ? "" : length, escapeNewLines(url));
 		}
 	}
 
@@ -242,7 +258,7 @@ public class Spinn3rDocument {
 
 		@Override
 		public String toString() {
-			return String.format("%s\t%d\t%s", startPos, length, text);
+			return String.format("%s\t%d\t%s", startPos, length, escapeNewLines(text));
 		}
 	}
 
