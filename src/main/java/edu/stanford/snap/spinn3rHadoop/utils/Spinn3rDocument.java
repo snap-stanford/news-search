@@ -57,11 +57,13 @@ public class Spinn3rDocument {
 		if (docId != null) {
 			str.append("I\t").append(docId).append("\n");
 		} else {
+			System.out.println("Document has no docID! URL: " + urlString);
 			throw new IllegalArgumentException("Document has no docId");
 		}
 		if (version != null) {
 			str.append("V\t").append(version).append("\n");
 		} else {
+			System.out.println("Document has no verrsion! DocID: " + docId);
 			throw new IllegalArgumentException("Document has no version");
 		}
 		for (Lang l : langs) {
@@ -71,11 +73,13 @@ public class Spinn3rDocument {
 		if (urlString != null) {
 			str.append("U\t").append(escapeNewLines(urlString)).append("\n");
 		} else {
+			System.out.println("Document has no URL! DocID: " + docId);
 			throw new IllegalArgumentException("Document has no URL");
 		}
 		if (date != null) {
 			str.append("D\t").append(escapeNewLines(date)).append("\n");
 		} else {
+			System.out.println("Document has no date! DocID: " + docId);
 			throw new IllegalArgumentException("Document has no date");
 		}
 		if (title != null) {
