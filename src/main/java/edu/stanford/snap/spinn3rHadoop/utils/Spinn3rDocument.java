@@ -80,7 +80,7 @@ public class Spinn3rDocument {
 			str.append("D\t").append(escapeNewLines(date)).append("\n");
 		} else {
 			System.out.println("Document has no date! DocID: " + docId);
-			throw new IllegalArgumentException("Document has no date");
+			throw new IllegalArgumentException("Document has no date! DocID: " + docId);
 		}
 		if (title != null) {
 			str.append("T\t").append(escapeNewLines(title)).append("\n");
