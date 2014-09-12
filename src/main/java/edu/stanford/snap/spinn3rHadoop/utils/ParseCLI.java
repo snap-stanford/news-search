@@ -138,6 +138,7 @@ public class ParseCLI {
 		 * 		- empty title
 		 * 		- empty content
 		 * 		- no quotes
+		 * 	Case insensitive matching
 		 *  */
 		Option removeVersions = OptionBuilder.withArgName("removeVersions")
 				//.isRequired()
@@ -149,6 +150,7 @@ public class ParseCLI {
 		Option removeEmptyTitle = new Option("removeEmptyTitle", "Remove documents that have an empty title.");
 		Option removeEmptyContent = new Option("removeEmptyContent", "Remove documents that have an empty content.");
 		Option removeNoQuotes = new Option("removeNoQuotes", "Remove documents that have no quotes.");
+		Option caseInsensitive = new Option("caseInsensitive", "Make all the matching case-insensitive.");
 
 		CommandLine cmd = null;
 		Options options = new Options();
@@ -156,22 +158,23 @@ public class ParseCLI {
 		options.addOption(start);
 		options.addOption(end);
 		options.addOption(content);
-		options.addOption(urlWL);
-		options.addOption(urlBL);
-		options.addOption(removeNoLanguage);
 		options.addOption(langWL);
 		options.addOption(langBL);
-		options.addOption(removeGarbled);
-		options.addOption(removeVersions);
-		options.addOption(removeEmptyTitle);
+		options.addOption(urlWL);
+		options.addOption(urlBL);
 		options.addOption(titleWL);
 		options.addOption(titleBL);
-		options.addOption(removeEmptyContent);
 		options.addOption(contentWL);
 		options.addOption(contentBL);
-		options.addOption(removeNoQuotes);
 		options.addOption(quoteWL);
 		options.addOption(quoteBL);
+		options.addOption(removeVersions);
+		options.addOption(removeNoLanguage);
+		options.addOption(removeGarbled);
+		options.addOption(removeEmptyTitle);
+		options.addOption(removeEmptyContent);
+		options.addOption(removeNoQuotes);
+		options.addOption(caseInsensitive);
 
 		try {
 			/** Parse */
@@ -261,6 +264,7 @@ public class ParseCLI {
 		System.out.println("-removeEmptyTitle: " + in.hasOption("removeEmptyTitle"));
 		System.out.println("-removeEmptyContent: " + in.hasOption("removeEmptyContent"));
 		System.out.println("-removeNoQuotes: " + in.hasOption("removeNoQuotes"));
+		System.out.println("-caseInsensitive: " + in.hasOption("caseInsensitive"));
 	}
 
 	public static void main(String [] args){

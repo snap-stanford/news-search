@@ -41,9 +41,17 @@ public class DocumentFilter {
 	private boolean removeEmptyContent;
 	private boolean removeEmptyTitle;
 	private boolean removeNoQuotes;
+	private boolean caseInsensitive;
 
 
 	public DocumentFilter(CommandLine cmd){
+		this.removeNoLanguage = cmd.hasOption("removeNoLanguage");
+		this.removeGarbled = cmd.hasOption("removeGarbled");
+		this.removeEmptyContent = cmd.hasOption("removeEmptyContent");
+		this.removeEmptyTitle = cmd.hasOption("removeEmptyTitle");
+		this.removeNoQuotes = cmd.hasOption("removeNoQuotes");
+		this.caseInsensitive = cmd.hasOption("caseInsensitive");
+		
 		if(cmd.getOptionValues("langWL") != null)
 			this.langWL = getPatternsFromStings(cmd.getOptionValues("langWL"));
 		if(cmd.getOptionValues("langBL") != null)
@@ -66,17 +74,18 @@ public class DocumentFilter {
 			this.quoteBL = getPatternsFromStings(cmd.getOptionValues("quoteBL"));
 		if(cmd.getOptionValue("removeVersions") != null)
 			this.removeVersions = cmd.getOptionValues("removeVersions");
-		this.removeNoLanguage = cmd.hasOption("removeNoLanguage");
-		this.removeGarbled = cmd.hasOption("removeGarbled");
-		this.removeEmptyContent = cmd.hasOption("removeEmptyContent");
-		this.removeEmptyTitle = cmd.hasOption("removeEmptyTitle");
-		this.removeNoQuotes = cmd.hasOption("removeNoQuotes");
 	}
 
 	private Pattern [] getPatternsFromStings(String [] in){
 		Pattern [] p = new Pattern [in.length];
-		for(int i = 0; i < p.length; i++)
-			p[i] = Pattern.compile(in[i]);
+		for(int i = 0; i < p.length; i++){
+			if(this.caseInsensitive){
+				p[i] = Pattern.compile(in[i], Pattern.CASE_INSENSITIVE);
+			}
+			else{
+				p[i] = Pattern.compile(in[i]);
+			}
+		}
 		return p;
 	}
 

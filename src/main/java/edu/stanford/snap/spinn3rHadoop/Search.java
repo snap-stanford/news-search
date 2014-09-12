@@ -90,8 +90,11 @@ public class Search extends Configured implements Tool {
 			FileInputFormat.setInputPathFilter(job, Spinn3rInputFilter.class);
 		}
 		FileOutputFormat.setOutputPath(job, new Path(cmd.getOptionValue("output")));
-
+		
 		job.waitForCompletion(true);
+		
+		//fs.setReplication(new Path(cmd.getOptionValue("output")+"/*"), (short) 1);
+		
 		return 0;
 	}
 	
