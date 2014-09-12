@@ -179,7 +179,7 @@ public class Search extends Configured implements Tool {
 			t2 = System.nanoTime();
 			context.getCounter(ProcessingTime.FILTERING).increment(t2-t1);
 			if (t){
-				if(cmd.hasOption("formatF5")){
+				if(cmdMap.hasOption("formatF5")){
 					context.write(new Text(d.toStringF5()), NullWritable.get());
 				}
 				else{
