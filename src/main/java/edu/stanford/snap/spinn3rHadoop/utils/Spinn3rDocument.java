@@ -42,10 +42,14 @@ public class Spinn3rDocument {
 			}
 		}
 	}
+	
 	private static String escapeNewLines(String in){
-		return in.replaceAll("\n", " &#10; ");
+		return in.replaceAll("\n", "&#10;");
 	}
-
+	
+	private static String escapeNewLinesAndTabs(String in){
+		return in.replaceAll("\n", "&#10;").replace("\t", "&#9;");
+	}
 
 	/*
 	 * Prints the document in the "full5" multi-line format.
@@ -95,6 +99,42 @@ public class Spinn3rDocument {
 		}
 		for (Quote q : quotes) {
 			str.append("Q\t").append(q.toString()).append("\n");
+		}
+		return str.toString();
+	}
+	
+	/*
+	 * Prints the document in the "F5" single-line format.
+	 * */
+	public String toStringF5() {
+		StringBuffer str = new StringBuffer();
+		if (urlString != null) {
+			str.append("U:").append(escapeNewLinesAndTabs(urlString)).append("\t");
+		} else {
+			throw new IllegalArgumentException("Document has no URL");
+		}
+		if (date != null) {
+			str.append("D:").append(escapeNewLinesAndTabs(date)).append("\t");
+		} else {
+			throw new IllegalArgumentException("Document has no date!");
+		}
+		if (title != null) {
+			str.append("T:").append(escapeNewLinesAndTabs(title)).append("\t");
+		}
+		if (title_raw != null) {
+			str.append("F:").append(escapeNewLinesAndTabs(title_raw)).append("\t");
+		}
+		if (content != null) {
+			str.append("C:").append(escapeNewLinesAndTabs(content)).append("\t");
+		}
+		if (content_raw != null) {
+			str.append("H:").append(escapeNewLinesAndTabs(content_raw)).append("\t");
+		}
+		for (Link l : links) {
+			str.append("L:").append(l.toString()).append("\t");
+		}
+		for (Quote q : quotes) {
+			str.append("Q:").append(q.toString()).append("\t");
 		}
 		return str.toString();
 	}
@@ -234,7 +274,7 @@ public class Spinn3rDocument {
 
 		@Override
 		public String toString() {
-			return String.format("%d\t%s\t%s", startPos, length == null ? "" : length, escapeNewLines(url));
+			return String.format("%d\t%s\t%s", startPos, length == null ? "" : length, escapeNewLinesAndTabs(url));
 		}
 	}
 
@@ -258,7 +298,7 @@ public class Spinn3rDocument {
 
 		@Override
 		public String toString() {
-			return String.format("%s\t%d\t%s", startPos, length, escapeNewLines(text));
+			return String.format("%s\t%d\t%s", startPos, length, escapeNewLinesAndTabs(text));
 		}
 	}
 

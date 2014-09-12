@@ -138,7 +138,6 @@ public class ParseCLI {
 		 * 		- empty title
 		 * 		- empty content
 		 * 		- no quotes
-		 * 	Case insensitive matching
 		 *  */
 		Option removeVersions = OptionBuilder.withArgName("removeVersions")
 				//.isRequired()
@@ -150,7 +149,13 @@ public class ParseCLI {
 		Option removeEmptyTitle = new Option("removeEmptyTitle", "Remove documents that have an empty title.");
 		Option removeEmptyContent = new Option("removeEmptyContent", "Remove documents that have an empty content.");
 		Option removeNoQuotes = new Option("removeNoQuotes", "Remove documents that have no quotes.");
+		
+		/**
+		 * Case insensitive matching
+		 * Use F5 output format
+		 */
 		Option caseInsensitive = new Option("caseInsensitive", "Make all the matching case-insensitive.");
+		Option formatF5 = new Option("formatF5", "Use the F5 format for output.");
 
 		CommandLine cmd = null;
 		Options options = new Options();
@@ -175,6 +180,7 @@ public class ParseCLI {
 		options.addOption(removeEmptyContent);
 		options.addOption(removeNoQuotes);
 		options.addOption(caseInsensitive);
+		options.addOption(formatF5);
 
 		try {
 			/** Parse */
@@ -265,6 +271,7 @@ public class ParseCLI {
 		System.out.println("-removeEmptyContent: " + in.hasOption("removeEmptyContent"));
 		System.out.println("-removeNoQuotes: " + in.hasOption("removeNoQuotes"));
 		System.out.println("-caseInsensitive: " + in.hasOption("caseInsensitive"));
+		System.out.println("-formatF5: " + in.hasOption("formatF5"));
 	}
 
 	public static void main(String [] args){
