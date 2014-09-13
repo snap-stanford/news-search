@@ -1,9 +1,14 @@
 package edu.stanford.snap.spinn3rHadoop.utils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Scanner;
 
 import org.apache.commons.cli.*;
 
@@ -293,6 +298,49 @@ public class ParseCLI {
 			cmd = null;
 		}
 		return cmd;
+	}
+	
+	/**
+	 * Helper for reading arguments from file
+	 * */
+	private static String [] fixOneFile(String argument, CommandLine cmd, String [] args) throws FileNotFoundException{
+		String [] fixed = args;
+		if(cmd.hasOption(argument) && cmd.getOptionValues(argument).length == 1){
+			String fname = cmd.getOptionValue(argument);
+			File f = new File(fname);
+			if(f.exists() && !f.isDirectory()) {
+				Scanner in = new Scanner(new FileReader(f));
+				ArrayList<String> content = new ArrayList<String>();
+				while(in.hasNextLine())
+					content.add(in.nextLine());
+				int fnameIndex = Arrays.asList(args).indexOf(fname);
+				String [] new_args = new String[args.length - 1 + content.size()];
+				System.arraycopy(args, 0, new_args, 0, fnameIndex);
+				System.arraycopy(content.toArray(), 0, new_args, fnameIndex, content.size());
+				System.arraycopy(args, fnameIndex+1, new_args, content.size()+fnameIndex, args.length-fnameIndex-1);
+				fixed = new_args;
+			}
+		}
+		return fixed;
+	}
+	
+	/**
+	 * The following method reads arguments from file and replaces them with file content and returns 
+	 * args as they would be if all arguments would be given as command line arguments. 
+	 * */
+	public static String [] replaceArgumentsFromFile(String [] args, CommandLine cmd) throws FileNotFoundException{
+		String [] fixed = args;
+		fixed = fixOneFile("urlWL", cmd, fixed);
+		fixed = fixOneFile("urlBL", cmd, fixed);
+		fixed = fixOneFile("keywordWL", cmd, fixed);
+		fixed = fixOneFile("keywordBL", cmd, fixed);
+		fixed = fixOneFile("titleWL", cmd, fixed);
+		fixed = fixOneFile("titleBL", cmd, fixed);
+		fixed = fixOneFile("contentWL", cmd, fixed);
+		fixed = fixOneFile("contentBL", cmd, fixed);
+		fixed = fixOneFile("quoteWL", cmd, fixed);
+		fixed = fixOneFile("quoteBL", cmd, fixed);
+		return fixed;
 	}
 	
 	public static void printArguments(CommandLine in){

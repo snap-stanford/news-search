@@ -46,9 +46,14 @@ public class Search extends Configured implements Tool {
 		if(cmd == null){
 			System.exit(-1);
 		}
+		
+		/** Fill in arguments from file */
+		String [] new_args = ParseCLI.replaceArgumentsFromFile(args, cmd);
+		cmd = ParseCLI.parse(new_args);
+		ParseCLI.printArguments(cmd);
 
 		/** Run the job */
-		int res = ToolRunner.run(new Configuration(), new Search(), args);
+		int res = ToolRunner.run(new Configuration(), new Search(), new_args);
 		System.exit(res);
 	}
 
