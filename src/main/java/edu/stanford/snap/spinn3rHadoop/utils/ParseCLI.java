@@ -3,6 +3,8 @@ package edu.stanford.snap.spinn3rHadoop.utils;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+
 import org.apache.commons.cli.*;
 
 /**
@@ -16,6 +18,14 @@ import org.apache.commons.cli.*;
  * */
 
 public class ParseCLI {	
+	private static int MAX_ARGUMENTS = 10;
+	private static List<String> ALLOWED_LANGUAGESE = Arrays.asList("af", "ar", "bg", "bn", "cs", "da", "de", "el", "en", "es", "et", "fa", "fi", 
+		"fr", "gu", "he", "hi", "hr", "hu", "id", "it", "ja", "kn", "ko", "lt", "lv", "mk", "ml", "mr", "ne", "nl", "no", "pa", 
+		"pl", "pt", "ro", "ru", "sk", "sl", "so", "sq", "sv", "sw", "ta", "te", "th", "tl", "tr", "uk", "ur", "vi", "zh-cn", 
+		"zh-tw","ar", "bg", "bn", "ca", "cs", "da", "de", "el", "en", "es", "et", "fa", "fi", "fr", "gu", "he", "hi", "hr", 
+		"hu", "id", "it", "ja", "ko", "lt", "lv", "mk", "ml", "nl", "no", "pa", "pl", "pt", "ro", "ru", "si", "sq", "sv", "ta", 
+		"te", "th", "tl", "tr", "uk", "ur", "vi", "zh-cn", "zh-tw");
+	
 	@SuppressWarnings("static-access")
 	public static CommandLine parse(String[] args){	
 		/***
@@ -33,7 +43,7 @@ public class ParseCLI {
 		Option start = OptionBuilder.withArgName("start")
 				.isRequired()
 				.hasArg()
-				.withDescription("Set the start date and hour. For 31th of August at 14:00 you write: 2008-31-08T14")
+				.withDescription("Set the start date and hour. Example: for 31th of August 2008 at 14:00 you write: 2008-31-08T14")
 				.create("start");
 
 		Option end = OptionBuilder.withArgName("end")
@@ -56,16 +66,14 @@ public class ParseCLI {
 		 * */
 		Option langWL = OptionBuilder.withArgName("langWL")
 				//.isRequired()
-				.hasArgs(10)
-				.withDescription("White List for languages. If present return only documents that match this language are returned. "
-						+ "If several arguments present we return all documents that match any of them.")
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("White List for languages.")
 				.create("langWL");
 
 		Option langBL = OptionBuilder.withArgName("langBL")
 				//.isRequired()
-				.hasArgs(10)
-				.withDescription("Black List for languages. If present documents with this language are discarded from results. " +
-								 "If several arguments present all documents that match any of them are discarded.")
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("Black List for languages.")
 				.create("langBL");
 
 		
@@ -74,30 +82,46 @@ public class ParseCLI {
 		 * */
 		Option urlWL = OptionBuilder.withArgName("urlWL")
 				//.isRequired()
-				.hasArgs(10)
-				.withDescription("White List for urls. If present documents that match at least one of the patterns are returned.")
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("White List for urls.")
 				.create("urlWL");
 
 		Option urlBL = OptionBuilder.withArgName("urlBL")
 				//.isRequired()
-				.hasArgs(10)
-				.withDescription("Black List for urls. If present all documents that match any of the pattern are discarded from search results.")
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("Black List for urls.")
 				.create("urlBL");
 
+		/**
+		 * Keywords
+		 * 		search if this appears in the document: 
+		 * 		either in title or in content.
+		 * */
+		Option keywordWL = OptionBuilder.withArgName("keywordWL")
+				//.isRequired()
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("White list for keywords. We search for keywords in title and content.")
+				.create("keywordWL");
+
+		Option keywordBL = OptionBuilder.withArgName("keywordBL")
+				//.isRequired()
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("Black list for keywords. We search for keywords in title and content.")
+				.create("keywordBL");
+		
 		/**
 		 * Title
 		 * */
 		Option titleWL = OptionBuilder.withArgName("titleWL")
 				//.isRequired()
-				.hasArgs(10)
-				.withDescription("White list for titles. If present just documents that match all patterns are returned. "
-						+ "To implement OR the '|' character should be used within one pattern.")
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("White list for titles.")
 				.create("titleWL");
 
 		Option titleBL = OptionBuilder.withArgName("titleBL")
 				//.isRequired()
-				.hasArgs(10)
-				.withDescription("Black list for titles. If present all documents that match any of the pattern are discarded from search results.")
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("Black list for titles.")
 				.create("titleBL");
 
 		/**
@@ -105,15 +129,14 @@ public class ParseCLI {
 		 * */
 		Option contentWL = OptionBuilder.withArgName("contentWL")
 				//.isRequired()
-				.hasArgs(10)
-				.withDescription("White list for content. If present just documents that match all patterns are returned. "
-						+ "To implement OR the '|' character should be used within one pattern.")
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("White list for content.")
 				.create("contentWL");
 
 		Option contentBL = OptionBuilder.withArgName("contentBL")
 				//.isRequired()
-				.hasArgs(10)
-				.withDescription("Black list for content. If present all documents that match any of the pattern are discarded from search results.")
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("Black list for content.")
 				.create("contentBL");
 
 		/**
@@ -121,14 +144,14 @@ public class ParseCLI {
 		 * */
 		Option quoteWL = OptionBuilder.withArgName("quoteWL")
 				//.isRequired()
-				.hasArgs(10)
-				.withDescription("White list for quotes. If present return documents for which all patterns are matched to at least one quote.")
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("White list for quotes. Return documents for which some pattern is matched by at least one quote.")
 				.create("quoteWL");
 
 		Option quoteBL = OptionBuilder.withArgName("quoteBL")
 				//.isRequired()
-				.hasArgs(10)
-				.withDescription("Black list for quotes. If present discard documents for which some quote matches some pattern.")
+				.hasArgs(MAX_ARGUMENTS)
+				.withDescription("Black list for quotes. Discard documents for which any quote matches any pattern.")
 				.create("quoteBL");
 		
 		/** Remove documents with:
@@ -144,11 +167,12 @@ public class ParseCLI {
 				.hasArgs(5)
 				.withDescription("Select versions which should be removed from search query: A, B, C, D, E")
 				.create("removeVersions");
-		Option removeNoLanguage = new Option("removeNoLanguage", "Remove documents that do not have any language detected with probability >= 0.8.");
+		Option removeNoLanguage = new Option("removeNoLanguage", "Remove documents without probable language (probability >= 0.8).");
 		Option removeGarbled = new Option("removeGarbled", "Remove documents that have fraction of usefull characters < 0.8.");
-		Option removeEmptyTitle = new Option("removeEmptyTitle", "Remove documents that have an empty title.");
-		Option removeEmptyContent = new Option("removeEmptyContent", "Remove documents that have an empty content.");
-		Option removeNoQuotes = new Option("removeNoQuotes", "Remove documents that have no quotes.");
+		Option removeUnparsableURL = new Option("removeUnparsableURL", "Remove source URLs that can not be parsed.");
+		Option removeEmptyTitle = new Option("removeEmptyTitle", "Remove documents with empty title.");
+		Option removeEmptyContent = new Option("removeEmptyContent", "Remove documents with empty content.");
+		Option removeNoQuotes = new Option("removeNoQuotes", "Remove documents without quotes.");
 		
 		/**
 		 * Case insensitive matching
@@ -167,6 +191,8 @@ public class ParseCLI {
 		options.addOption(langBL);
 		options.addOption(urlWL);
 		options.addOption(urlBL);
+		options.addOption(keywordWL);
+		options.addOption(keywordBL);
 		options.addOption(titleWL);
 		options.addOption(titleBL);
 		options.addOption(contentWL);
@@ -176,6 +202,7 @@ public class ParseCLI {
 		options.addOption(removeVersions);
 		options.addOption(removeNoLanguage);
 		options.addOption(removeGarbled);
+		options.addOption(removeUnparsableURL);
 		options.addOption(removeEmptyTitle);
 		options.addOption(removeEmptyContent);
 		options.addOption(removeNoQuotes);
@@ -232,6 +259,22 @@ public class ParseCLI {
 					} 
 				}
 			}
+			
+			/** Check languages */
+			if(cmd.hasOption("langWL")){
+				for(String l : cmd.getOptionValues("langWL")){
+					if(!ALLOWED_LANGUAGESE.contains(l)){
+						throw new ParseException("Invalid lenguage: " + l);
+					}
+				}
+			}
+			if(cmd.hasOption("langBL")){
+				for(String l : cmd.getOptionValues("langBL")){
+					if(!ALLOWED_LANGUAGESE.contains(l)){
+						throw new ParseException("Invalid lenguage: " + l);
+					}
+				}
+			}
 
 		} catch (Exception e) {
 			System.out.println("ERROR: "+e.getLocalizedMessage());
@@ -239,8 +282,11 @@ public class ParseCLI {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("search [OUTPUT FOLDER] [OPTIONS]\n"
 					+ "\nThe main concept here are White and Black lists. For document to pass the search "
-					+ "it must match with (some or all, depeding on attribute) patterns in White list and it "
-					+ "must not match with any of the patterns in Black list. Matching with Black list overrides matching with White list.\n"
+					+ "it must match with some pattern in White list and it "
+					+ "must not match with any of the patterns in Black list. "
+					+ "Matching with Black list overrides matching with White list. "
+					+ "When several arguments are present for a list there is the OR operator between them. "
+					+ "To use AND use &&. For example: 'black && white' will return documents that contain both words. \n"
 					+ "NOTICE: empty fields are treater separately, not with White lists. For example, if we search "
 					+ "for all documents with language 'en', by default all languages with no language detected will "
 					+ "also be in results. To change this use '-removeNoLanguage' option. Same hold for all other fields ass well.", options);
@@ -258,6 +304,8 @@ public class ParseCLI {
 		System.out.println("-langBL: " + (in.getOptionValues("langBL") !=null ? Arrays.asList(in.getOptionValues("langBL")) : "null"));
 		System.out.println("-urlWL: " + (in.getOptionValues("urlWL") !=null ? Arrays.asList(in.getOptionValues("urlWL")) : "null"));
 		System.out.println("-urlBL: " + (in.getOptionValues("urlBL") !=null ? Arrays.asList(in.getOptionValues("urlBL")) : "null"));
+		System.out.println("-keywordWL: " + (in.getOptionValues("keywordWL") !=null ? Arrays.asList(in.getOptionValues("keywordWL")) : "null"));
+		System.out.println("-keywordBL: " + (in.getOptionValues("keywordBL") !=null ? Arrays.asList(in.getOptionValues("keywordBL")) : "null"));
 		System.out.println("-titleWL: " + (in.getOptionValues("titleWL") !=null ? Arrays.asList(in.getOptionValues("titleWL")) : "null"));
 		System.out.println("-titleBL: " + (in.getOptionValues("titleBL") !=null ? Arrays.asList(in.getOptionValues("titleBL")) : "null"));
 		System.out.println("-contentWL: " + (in.getOptionValues("contentWL") !=null ? Arrays.asList(in.getOptionValues("contentWL")) : "null"));
@@ -267,6 +315,7 @@ public class ParseCLI {
 		System.out.println("-removeVersions: " + (in.getOptionValues("removeVersions") !=null ? Arrays.asList(in.getOptionValues("removeVersions")) : "null"));
 		System.out.println("-removeNoLanguage: " + in.hasOption("removeNoLanguage"));
 		System.out.println("-removeGarbled: " + in.hasOption("removeGarbled"));
+		System.out.println("-removeUnparsableURL: " + in.hasOption("removeUnparsableURL"));
 		System.out.println("-removeEmptyTitle: " + in.hasOption("removeEmptyTitle"));
 		System.out.println("-removeEmptyContent: " + in.hasOption("removeEmptyContent"));
 		System.out.println("-removeNoQuotes: " + in.hasOption("removeNoQuotes"));

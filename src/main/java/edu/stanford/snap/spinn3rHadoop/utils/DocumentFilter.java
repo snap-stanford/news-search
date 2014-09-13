@@ -1,11 +1,14 @@
 package edu.stanford.snap.spinn3rHadoop.utils;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
+
+import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument.Quote;
 
 /**
  * This class implements checking whether some document
@@ -24,22 +27,26 @@ import org.apache.commons.cli.CommandLine;
  * */
 
 public class DocumentFilter {
+	private static String AND_SIGN = "&&";
 	private Matcher matcher;
-	private Pattern [] langWL;
-	private Pattern [] langBL;
-	private Pattern [] urlWL;
-	private Pattern [] urlBL;
-	private Pattern [] titleWL;
-	private Pattern [] titleBL;
-	private Pattern [] contentWL;
-	private Pattern [] contentBL;
-	private Pattern [] quoteWL;
-	private Pattern [] quoteBL;
+	private String [] langWL;
+	private String [] langBL;
+	private ArrayList<ArrayList<Pattern>> keywordWL;
+	private ArrayList<ArrayList<Pattern>> keywordBL;
+	private ArrayList<ArrayList<Pattern>> urlWL;
+	private ArrayList<ArrayList<Pattern>> urlBL;
+	private ArrayList<ArrayList<Pattern>> titleWL;
+	private ArrayList<ArrayList<Pattern>> titleBL;
+	private ArrayList<ArrayList<Pattern>> contentWL;
+	private ArrayList<ArrayList<Pattern>> contentBL;
+	private ArrayList<ArrayList<Pattern>> quoteWL;
+	private ArrayList<ArrayList<Pattern>> quoteBL;
 	private String [] removeVersions;
 	private boolean removeNoLanguage;
 	private boolean removeGarbled;
-	private boolean removeEmptyContent;
+	private boolean removeUnparsableURL;
 	private boolean removeEmptyTitle;
+	private boolean removeEmptyContent;
 	private boolean removeNoQuotes;
 	private boolean caseInsensitive;
 
@@ -47,46 +54,104 @@ public class DocumentFilter {
 	public DocumentFilter(CommandLine cmd){
 		this.removeNoLanguage = cmd.hasOption("removeNoLanguage");
 		this.removeGarbled = cmd.hasOption("removeGarbled");
-		this.removeEmptyContent = cmd.hasOption("removeEmptyContent");
+		this.removeUnparsableURL = cmd.hasOption("removeUnparsableURL");
 		this.removeEmptyTitle = cmd.hasOption("removeEmptyTitle");
+		this.removeEmptyContent = cmd.hasOption("removeEmptyContent");
 		this.removeNoQuotes = cmd.hasOption("removeNoQuotes");
 		this.caseInsensitive = cmd.hasOption("caseInsensitive");
-		
+
 		if(cmd.getOptionValues("langWL") != null)
-			this.langWL = getPatternsFromStings(cmd.getOptionValues("langWL"));
+			this.langWL = cmd.getOptionValues("langWL");
 		if(cmd.getOptionValues("langBL") != null)
-			this.langBL = getPatternsFromStings(cmd.getOptionValues("langBL"));
+			this.langBL = cmd.getOptionValues("langBL");
 		if(cmd.getOptionValue("urlWL") != null)
-			this.urlWL = getPatternsFromStings(cmd.getOptionValues("urlWL"));
+			this.urlWL = getArrayListOfPatternsFromStings(cmd.getOptionValues("urlWL"));
 		if(cmd.getOptionValue("urlBL") != null)
-			this.urlBL = getPatternsFromStings(cmd.getOptionValues("urlBL"));
+			this.urlBL = getArrayListOfPatternsFromStings(cmd.getOptionValues("urlBL"));
+		if(cmd.getOptionValues("keywordWL") != null)
+			this.keywordWL = getArrayListOfPatternsFromStings(cmd.getOptionValues("keywordWL"));
+		if(cmd.getOptionValues("keywordBL") != null)
+			this.keywordBL = getArrayListOfPatternsFromStings(cmd.getOptionValues("keywordBL"));
 		if(cmd.getOptionValues("titleWL") != null)
-			this.titleWL = getPatternsFromStings(cmd.getOptionValues("titleWL"));
+			this.titleWL = getArrayListOfPatternsFromStings(cmd.getOptionValues("titleWL"));
 		if(cmd.getOptionValues("titleBL") != null)
-			this.titleBL = getPatternsFromStings(cmd.getOptionValues("titleBL"));
+			this.titleBL = getArrayListOfPatternsFromStings(cmd.getOptionValues("titleBL"));
 		if(cmd.getOptionValues("contentWL") != null)
-			this.contentWL = getPatternsFromStings(cmd.getOptionValues("contentWL"));
+			this.contentWL = getArrayListOfPatternsFromStings(cmd.getOptionValues("contentWL"));
 		if(cmd.getOptionValues("contentBL") != null)
-			this.contentBL = getPatternsFromStings(cmd.getOptionValues("contentBL"));
+			this.contentBL = getArrayListOfPatternsFromStings(cmd.getOptionValues("contentBL"));
 		if(cmd.getOptionValues("quoteWL") != null)
-			this.quoteWL = getPatternsFromStings(cmd.getOptionValues("quoteWL"));
+			this.quoteWL = getArrayListOfPatternsFromStings(cmd.getOptionValues("quoteWL"));
 		if(cmd.getOptionValues("quoteBL") != null)
-			this.quoteBL = getPatternsFromStings(cmd.getOptionValues("quoteBL"));
+			this.quoteBL = getArrayListOfPatternsFromStings(cmd.getOptionValues("quoteBL"));
 		if(cmd.getOptionValue("removeVersions") != null)
 			this.removeVersions = cmd.getOptionValues("removeVersions");
 	}
 
-	private Pattern [] getPatternsFromStings(String [] in){
-		Pattern [] p = new Pattern [in.length];
-		for(int i = 0; i < p.length; i++){
-			if(this.caseInsensitive){
-				p[i] = Pattern.compile(in[i], Pattern.CASE_INSENSITIVE);
+	private ArrayList<ArrayList<Pattern>> getArrayListOfPatternsFromStings(String [] in){
+		ArrayList<ArrayList<Pattern>> l = new ArrayList<ArrayList<Pattern>>();
+		for(int i = 0; i < in.length; i++){
+			ArrayList<Pattern> tmp = new ArrayList<Pattern>();
+			for(String p : in[i].split(AND_SIGN)){
+				if(this.caseInsensitive){
+					tmp.add(Pattern.compile(p.trim(), Pattern.CASE_INSENSITIVE));
+				}
+				else{
+					tmp.add(Pattern.compile(p.trim()));
+				}
 			}
-			else{
-				p[i] = Pattern.compile(in[i]);
+			l.add(tmp);
+		}
+		return l;
+	}
+	
+	private boolean satsfiedWhiteAndBlackList(ArrayList<ArrayList<Pattern>> wl, ArrayList<ArrayList<Pattern>> bl, String text){
+		/**
+		 * 	We threat patterns as follows:
+		 * 		There is AND between Patterns inside one ArrayList at second level.
+		 * 		There is OR between ArrayList<Patterns>  at first level. 
+		 * */
+		
+		if(wl != null && !wl.isEmpty()){
+			boolean oneKeywordMatched = false; 		//OR phase
+			for(ArrayList<Pattern> wlpattern : wl){
+				boolean andSatisfied = true; 		//AND phase
+				for(Pattern p : wlpattern){
+					matcher = p.matcher(text);
+					if (!matcher.find()) {
+						andSatisfied = false;
+					}
+				}
+				if(andSatisfied){
+					oneKeywordMatched = true;
+					break;
+				}
+			}
+			if(!oneKeywordMatched){
+				return false;
 			}
 		}
-		return p;
+		
+		if(bl != null && !bl.isEmpty()){
+			boolean oneKeywordMatched = false; 		//OR phase
+			for(ArrayList<Pattern> blpattern : bl){
+				boolean andSatisfied = true; 		//AND phase
+				for(Pattern p : blpattern){
+					matcher = p.matcher(text);
+					if (!matcher.find()) {
+						andSatisfied = false;
+					}
+				}
+				if(andSatisfied){
+					oneKeywordMatched = true;
+					break;
+				}
+			}
+			if(oneKeywordMatched){
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -94,31 +159,14 @@ public class DocumentFilter {
 	 * */
 	public boolean documentSatisfies(Spinn3rDocument d){
 		/** Filter by language:
-		 * 		If removeNoLanguage = true then remove record with no language, otherwise leave them.
 		 * 		Black and White lists only apply for documents with probable language.
-		 * 		If we have a WL and the language is not in it, discard it.
-		 * 		If language is in BL, discard it.
 		 * */
 		if(d.hasProbableLanguage()){
-			if(langWL != null && langWL.length > 0){
-				boolean someLangSatisfies = false;
-				for(Pattern p : langWL){
-					matcher = p.matcher(d.getProbableLanguage());
-					if (matcher.find()) {
-						someLangSatisfies = true;
-					}
-				}
-				if(!someLangSatisfies){
-					return false;
-				}
+			if(langWL != null && langWL.length > 0 && !Arrays.asList(langWL).contains(d.getProbableLanguage())){
+				return false;
 			}
-			if(langBL != null && langBL.length > 0){
-				for(Pattern p : langBL){
-					matcher = p.matcher(d.getProbableLanguage());
-					if(matcher.find()){
-						return false;
-					}
-				}
+			if(langBL != null && langBL.length > 0 && Arrays.asList(langBL).contains(d.getProbableLanguage())){
+				return false;
 			}
 		}
 		else if (removeNoLanguage){
@@ -126,54 +174,30 @@ public class DocumentFilter {
 		}
 
 		/** 
-		 * Filter by URL:
-		 * 		For document to to pass it must match with at 
-		 * 		least one pattern from the WL and it must not  
-		 * 		match with any pattern from the black list.
+		 * Filter by URL
 		 * */
-		if(urlWL != null && urlWL.length > 0){
-			boolean someUrlSatisfies = false;
-			for(Pattern p : urlWL){
-				matcher = p.matcher(d.url.getHost());
-				if (matcher.find()) {
-					someUrlSatisfies = true;
-				}
-			}
-			if(!someUrlSatisfies){
+		if(d.url != null){
+			if(!satsfiedWhiteAndBlackList(urlWL, urlBL, d.url.getHost()))
 				return false;
-			}
 		}
-		if(urlBL != null && urlBL.length > 0){
-			for(Pattern p : urlBL){
-				matcher = p.matcher(d.url.getHost());
-				if(matcher.find()){
-					return false;
-				}
-			}
+		else if(removeUnparsableURL){
+			return false;
 		}
+		
+		/** 
+		 * Filter by keywords:
+		 * */
+		if(!satsfiedWhiteAndBlackList(this.keywordWL, this.keywordBL, d.title + " " + d.content)){
+			return false;
+		}
+		
 
 		/** 
 		 * Filter by title:
-		 * 		For document to pass it must match with all patterns in the WL and 
-		 * 		it must not match with any pattern in the BL.
-		 * */
+		 * */		
 		if(d.title != null && d.title.length() > 0){
-			if(titleWL != null && titleWL.length > 0){
-				for(Pattern p : titleWL){
-					matcher = p.matcher(d.title);
-					if (!matcher.find()) {
-						return false;
-					}
-				}
-			}
-			if(titleBL != null && titleBL.length > 0){
-				for(Pattern p : titleBL){
-					matcher = p.matcher(d.title);
-					if(matcher.find()){
-						return false;
-					}
-				}
-			}
+			if(!satsfiedWhiteAndBlackList(titleWL, titleBL, d.title))
+				return false;
 		}
 		else if (removeEmptyTitle){
 			return false;
@@ -181,26 +205,10 @@ public class DocumentFilter {
 
 		/** 
 		 * Filter by content:
-		 * 		For document to pass it must match with all patterns in the WL and 
-		 * 		it must not match with any pattern in the BL.
 		 * */
 		if(d.content != null && d.content.length() > 0){
-			if(contentWL != null && contentWL.length > 0){
-				for(Pattern p : contentWL){
-					matcher = p.matcher(d.content);
-					if (!matcher.find()) {
-						return false;
-					}
-				}
-			}
-			if(contentBL != null && contentBL.length > 0){
-				for(Pattern p : contentBL){
-					matcher = p.matcher(d.content);
-					if(matcher.find()){
-						return false;
-					}
-				}
-			}
+			if(!satsfiedWhiteAndBlackList(contentWL, contentBL, d.content))
+				return false;
 		}
 		else if (removeEmptyContent){
 			return false;
@@ -208,34 +216,13 @@ public class DocumentFilter {
 
 		/** 
 		 * Filter by quotes:
-		 * 		For document to pass all WL patterns must be matched by at least one quote
-		 * 		and none of the quotes is allowed to match any of BL patterns.
 		 * */
 		if(!d.quotes.isEmpty()){
-			if(quoteWL != null && quoteWL.length > 0){
-				for(Pattern p : quoteWL){
-					boolean someQuoteSatisfies = false;
-					for(Spinn3rDocument.Quote q : d.quotes){
-						matcher = p.matcher(q.text);
-						if (matcher.find()) {
-							someQuoteSatisfies = true;
-						}
-					}
-					if(!someQuoteSatisfies){
-						return false;
-					}
-				}
-			}
-			if(quoteBL != null && quoteBL.length > 0){
-				for(Pattern p : quoteBL){
-					for(Spinn3rDocument.Quote q : d.quotes){
-						matcher = p.matcher(q.text);
-						if (matcher.find()) {
-							return false;
-						}
-					}
-				}
-			}
+			String allQuotes = "";
+			for(Quote q : d.quotes)
+				allQuotes += q.text;
+			if(!satsfiedWhiteAndBlackList(quoteWL, quoteBL, allQuotes))
+				return false;
 		}
 		else if (removeNoQuotes){
 			return false;
@@ -269,14 +256,12 @@ public class DocumentFilter {
 				+ "G	false	1.0\n"
 				+ "U	http://codeproject.com/KB/silverlight/convertsilverlightcontrol.aspx\n"
 				+ "D	2008-08-01 00:00:00\n"
-				+ "T	codeproject: how to convert a silverlight control to a visual webgui silverlight control. free source code and programming help\n"
-				+ "C	how to convert a silverlight control to a visual webgui silverlight control in this how to we are going to learn how to convert a silverlight control to a visual webgui control.\n"
+				+ "T	codeproject how to convert a silverlight control to a visual webgui \n"
+				+ "C	how to convert a silverlight control to \n"
 				+ "L	1206		http://schemas.microsoft.com/winfx/2006/xaml/presentation\n"
 				+ "L	1211		http://schemas.microsoft.com/winfx/2006/xaml\n"
-				+ "Q	85	6	how to\n"
-				+ "Q	549	6	how to\n"
 				+ "Q	948	69	how to create property binding in a visual webgui silverlight control\n"
-				+ "Q	1212	173	 and this is the media player control class public class videoplayer : control { static dependencyproperty mediasourceproperty; private mediaelement mobjmediaelement; base .\n"
+				+ "Q	1212	173	 and this is the media player control class public class  : control { static dependencyproperty mediasourceproperty; private mediaelement mobjmediaelement; base .\n"
 				+ "Q	3047	134	 videoplayer.silverlight.controls.videoplayer, videoplayer.silverlight.controls, version=1.0.0.0, culture=neutral, publickeytoken=null\n"
 				+ "Q	3633	6	 this.\n"
 				+ "Q	4110	55	 videoplayer.controls.videoplayer, videoplayer.controls\n"
