@@ -154,15 +154,17 @@ public class Search extends Configured implements Tool {
 	}
 
 	public static class Map extends Mapper<LongWritable, Text, Text, NullWritable> {
-		private CommandLine cmdMap;
-		private DocumentFilter filter;
-		long t1, t2;
-		boolean t;
+		//private CommandLine cmdMap;
+		//private DocumentFilter filter;
+		//long t1, t2;
+		//boolean t;
 		
 		@Override
 		public void setup(Context context){
+			/** DO NOTHING
 			cmdMap = ParseCLI.parse(context.getConfiguration().getStrings("args"));
 			filter = new DocumentFilter(cmdMap);
+			*/
 		}
 
 		@Override
@@ -171,14 +173,17 @@ public class Search extends Configured implements Tool {
 			/** 
 			 * Parse document.
 			 * */
+			/**
 			t1 = System.nanoTime();
 			Spinn3rDocument d = new Spinn3rDocument(value.toString());
 			t2 = System.nanoTime();
 			context.getCounter(ProcessingTime.PARSING).increment(t2-t1);
+			*/
 			
 			/**
 			 * Return only those documents that satisfy search conditions
 			 * */ 
+			/**
 			t1 = System.nanoTime();
 			t = filter.documentSatisfies(d);
 			t2 = System.nanoTime();
@@ -192,6 +197,7 @@ public class Search extends Configured implements Tool {
 				}
 				
 			}
+			*/
 		}
 	}
 }
