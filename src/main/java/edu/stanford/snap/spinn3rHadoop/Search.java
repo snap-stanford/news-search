@@ -83,9 +83,16 @@ public class Search extends Configured implements Tool {
 		/** Set input and output formats */
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
+		
+		
+		/** JVM PROFILING*/
+		conf.setBoolean("mapred.task.profile", true);
+		conf.set("mapred.task.profile.params", "-agentlib:hprof=cpu=samples,heap=sites,depth=6,force=n,thread=y,verbose=n,file=%s");
+		conf.set("mapred.task.profile.maps", "0-4");
+		conf.set("mapred.task.profile.reduces", "");
 
 		/** Set input and output path */
-		boolean DEBUG = false;
+		boolean DEBUG = true;
 		if(DEBUG){
 			FileInputFormat.addInputPath(job, new Path("input/web/2008-08/web-2008-08-01T00-00-00Z.txt"));
 		}
