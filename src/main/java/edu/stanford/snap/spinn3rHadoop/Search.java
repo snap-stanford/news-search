@@ -87,7 +87,7 @@ public class Search extends Configured implements Tool {
 		
 		/** JVM PROFILING*/
 		conf.setBoolean("mapred.task.profile", true);
-		conf.set("mapred.task.profile.params", "-agentlib:hprof=cpu=samples,heap=sites,depth=6,force=n,thread=y,verbose=n,file=%s");
+		conf.set("mapred.task.profile.params", "-agentlib:hprof=cpu=samples,heap=sites,depth=6,force=n,thread=y,verbose=n,file=/user/niko/jvmprofiler.txt");
 		conf.set("mapred.task.profile.maps", "0-4");
 		conf.set("mapred.task.profile.reduces", "");
 
