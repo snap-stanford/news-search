@@ -64,6 +64,13 @@ public class Search extends Configured implements Tool {
 		Configuration conf = getConf();
 		conf.set("textinputformat.record.delimiter","\n\n");
 		conf.setStrings("args", args);
+		
+		/** JVM PROFILING*/
+		conf.setBoolean("mapreduce.task.profile", true);
+		conf.set("mapreduce.task.profile.params", "-agentlib:hprof=cpu=samples,heap=sites,depth=6,force=n,thread=y,verbose=n,file=%s");
+		conf.set("mapreduce.task.profile.maps", "0-4");
+		conf.set("mapreduce.task.profile.reduces", "");
+
 
 		/** Delete output directory if it exists */
 		FileSystem fs = FileSystem.get(conf);
@@ -84,13 +91,6 @@ public class Search extends Configured implements Tool {
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 		
-		
-		/** JVM PROFILING*/
-		conf.setBoolean("mapred.task.profile", true);
-		conf.set("mapred.task.profile.params", "-agentlib:hprof=cpu=samples,heap=sites,depth=6,force=n,thread=y,verbose=n,file=/user/niko/jvmprofiler.txt");
-		conf.set("mapred.task.profile.maps", "0-4");
-		conf.set("mapred.task.profile.reduces", "");
-
 		/** Set input and output path */
 		boolean DEBUG = false;
 		if(DEBUG){
