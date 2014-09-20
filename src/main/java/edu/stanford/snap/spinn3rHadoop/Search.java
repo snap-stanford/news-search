@@ -34,9 +34,9 @@ import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument;
 public class Search extends Configured implements Tool {
 	enum ProcessingTime{
 		PARSING,
-		FILTERING
+		FILTERING,
+		SETUP
 	}
-	
 	private static CommandLine cmd = null;
 
 	public static void main(String[] args) throws Exception {
@@ -65,12 +65,11 @@ public class Search extends Configured implements Tool {
 		conf.set("textinputformat.record.delimiter","\n\n");
 		conf.setStrings("args", args);
 		
-		/** JVM PROFILING*/
-		conf.setBoolean("mapreduce.task.profile", true);
-		conf.set("mapreduce.task.profile.params", "-agentlib:hprof=cpu=samples,heap=sites,depth=6,force=n,thread=y,verbose=n,file=%s");
-		conf.set("mapreduce.task.profile.maps", "0-4");
+		/** JVM PROFILING */
+		conf.setBoolean("mapreduce.task.profile", true);								   
+		conf.set("mapreduce.task.profile.params", "-agentlib:hprof=cpu=samples,heap=sites,depth=6,force=n,thread=y,verbose=n,file=%s");  
+		conf.set("mapreduce.task.profile.maps", "0-10");
 		conf.set("mapreduce.task.profile.reduces", "");
-
 
 		/** Delete output directory if it exists */
 		FileSystem fs = FileSystem.get(conf);
@@ -92,10 +91,10 @@ public class Search extends Configured implements Tool {
 		job.setOutputFormatClass(TextOutputFormat.class);
 		
 		/** Set input and output path */
-		boolean DEBUG = false;
+		boolean DEBUG = true;
 		if(DEBUG){
 			//FileInputFormat.addInputPath(job, new Path("input/web/2008-08/web-2008-08-01T00-00-00Z.txt"));
-			FileInputFormat.addInputPath(job, new Path("/user/niko/web-2008-08.txt"));
+			FileInputFormat.addInputPath(job, new Path("/user/niko/16M"));	
 		}
 		else{
 			/** Add all files and than the filter will remove those that should be skipped. */
@@ -105,8 +104,6 @@ public class Search extends Configured implements Tool {
 		FileOutputFormat.setOutputPath(job, new Path(cmd.getOptionValue("output")));
 		
 		job.waitForCompletion(true);
-		
-		//fs.setReplication(new Path(cmd.getOptionValue("output")+"/*"), (short) 1);
 		
 		return 0;
 	}
@@ -162,17 +159,20 @@ public class Search extends Configured implements Tool {
 	}
 
 	public static class Map extends Mapper<LongWritable, Text, Text, NullWritable> {
-		//private CommandLine cmdMap;
-		//private DocumentFilter filter;
-		//long t1, t2;
-		//boolean t;
+		private CommandLine cmdMap;
+		private DocumentFilter filter;
+		//private Spinn3rDocument d;
+		long t1, t2;
+		boolean t;
 		
 		@Override
 		public void setup(Context context){
-			/** DO NOTHING
+			t1 = System.nanoTime();
 			cmdMap = ParseCLI.parse(context.getConfiguration().getStrings("args"));
 			filter = new DocumentFilter(cmdMap);
-			*/
+			t2 = System.nanoTime();
+			context.getCounter(ProcessingTime.SETUP).increment(t2-t1);
+			//d = new Spinn3rDocument();
 		}
 
 		@Override
@@ -181,21 +181,23 @@ public class Search extends Configured implements Tool {
 			/** 
 			 * Parse document.
 			 * */
-			/**
 			t1 = System.nanoTime();
 			Spinn3rDocument d = new Spinn3rDocument(value.toString());
+			//d.fillFields(value.toString());
 			t2 = System.nanoTime();
 			context.getCounter(ProcessingTime.PARSING).increment(t2-t1);
-			*/
 			
 			/**
 			 * Return only those documents that satisfy search conditions
 			 * */ 
-			/**
 			t1 = System.nanoTime();
-			t = filter.documentSatisfies(d);
+			//TODO fix that this will work
+			if(!d.docId.equals("2009052607_00017235_W"))
+				t = filter.documentSatisfies(d);
 			t2 = System.nanoTime();
 			context.getCounter(ProcessingTime.FILTERING).increment(t2-t1);
+			
+			/**
 			if (t){
 				if(cmdMap.hasOption("formatF5")){
 					context.write(new Text(d.toStringF5()), NullWritable.get());
@@ -204,9 +206,16 @@ public class Search extends Configured implements Tool {
 					context.write(new Text(d.toString()), NullWritable.get());
 				}
 				
-			}
-			*/
+			}*/
+			
+			//d.clearFields();
 		}
+		
+		/**
+		@Override
+		public void cleanup(Context context){
+		}
+		*/
 	}
 }
 

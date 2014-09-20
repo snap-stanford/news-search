@@ -239,6 +239,124 @@ public class Spinn3rDocument {
 			}
 		}
 	}
+	
+	public Spinn3rDocument(){
+	}
+	
+	public void clearFields(){
+		docId = null;
+		url = null;
+		urlString = null;
+		date = null;
+		title = null;
+		title_raw = null;
+		content = null;
+		content_raw = null;
+		links.clear();;
+		quotes.clear();;
+		langs.clear();;
+		version = null;
+		//TODO check if false OK
+		isGarbled = false;
+		nonGarbageFraction = -1;
+	}
+	
+	public void fillFields(String doc){
+		for(String line : doc.split("\n")){
+			String[] tokens = line.split("\t", 2);
+			if(tokens.length < 2){
+				System.err.println("THE LINE IS: "+ line);
+				System.err.println("TOKENS ARE: "+ Arrays.asList(tokens));
+			}
+			String type = tokens[0];
+			String value = tokens[1];
+			// DocId
+			if (type.equals("I")){
+				this.docId = value;
+				continue;
+			}
+			// Version
+			else if (type.equals("V")){
+				this.version = Spinn3rVersion.valueOf(value);
+				continue;
+			}
+			// Languages
+			else if (type.equals("S")){
+				String [] split = value.split("\t", 2);
+				String lng = split[0];
+				double prob = Double.valueOf(split[1]);
+				this.langs.add(new Lang(lng, prob));
+				continue;
+			}
+			// Garbled info
+			else if (type.equals("G")){
+				String [] split = value.split("\t", 2);
+				this.isGarbled = Boolean.valueOf(split[0]);
+				this.nonGarbageFraction = Double.valueOf(split[1]);
+				continue;
+			}
+			// Url
+			else if (type.equals("U")){
+				urlString = value;
+				try {
+					this.url = new URL(value);
+				} catch (MalformedURLException e) {
+				}
+				continue;
+			}
+			// Date
+			else if (type.equals("D")){
+				this.date = value;
+				continue;
+			}
+			// Title
+			else if (type.equals("T")){
+				this.title = value;
+				continue;
+			}
+			// Title raw
+			else if (type.equals("F")){
+				this.title_raw = value;
+				continue;
+			}
+			// Content
+			else if (type.equals("C")){
+				this.content = value;
+				continue;
+			}
+			// Content raw
+			else if (type.equals("H")){
+				this.content_raw = value;
+				continue;
+			}
+			// Links
+			else if (type.equals("L")){
+				String [] split = value.split("\t", 3);
+				int startPos = Integer.valueOf(split[0]);
+				if(split[1].equals("")){
+					this.links.add(new Link(startPos, split[2]));
+				}
+				else{
+					int length = Integer.valueOf(split[1]);
+					this.links.add(new Link(startPos, length, split[2]));
+				}
+				continue;
+			}
+			// Quotes
+			else if (type.equals("Q")){
+				String [] split = value.split("\t", 3);
+				int startPos = Integer.valueOf(split[0]);
+				int length = Integer.valueOf(split[1]);
+				this.quotes.add(new Quote(startPos, length, split[2]));
+				System.out.print("");
+				continue;
+			}
+			// Unknown value
+			else{
+				throw new IllegalArgumentException("Illegal type character '"+type+"' found during parsing spinn3r document.");
+			}
+		}
+	}
 
 	/*
 	 * Append a language to this document.
