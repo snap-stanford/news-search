@@ -93,7 +93,7 @@ public class Search extends Configured implements Tool {
 		job.setOutputFormatClass(TextOutputFormat.class);
 		
 		/** Set input and output path */
-		boolean DEBUG = true;
+		boolean DEBUG = false;
 		if(DEBUG){
 			FileInputFormat.addInputPath(job, new Path("input/*/*"));
 			FileInputFormat.setInputPathFilter(job, Spinn3rInputFilter.class);
@@ -193,7 +193,7 @@ public class Search extends Configured implements Tool {
 			 * */ 
 			t1 = System.nanoTime();
 			//TODO fix for large contents
-			if(d.content.length() < 10000)
+			if(d.content != null && d.content.length() < 10000)
 				t = filter.documentSatisfies(d);
 			else
 				t = false;
