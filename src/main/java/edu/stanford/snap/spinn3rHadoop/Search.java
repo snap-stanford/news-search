@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class Search extends Configured implements Tool {
 	private static CommandLine cmd = null;
 
 	public static void main(String[] args) throws Exception {
-		
+
 		/** Check for arguments */
 		cmd = ParseCLI.parse(args);
 		if(cmd == null){
@@ -66,17 +67,18 @@ public class Search extends Configured implements Tool {
 		conf.setStrings("args", args);
 		
 		/** JVM PROFILING */
-		conf.setBoolean("mapreduce.task.profile", true);								   
-		conf.set("mapreduce.task.profile.params", "-agentlib:hprof=cpu=samples,heap=sites,depth=6,force=n,thread=y,verbose=n,file=%s");  
-		conf.set("mapreduce.task.profile.maps", "0-10");
-		conf.set("mapreduce.task.profile.reduces", "");
-
+		conf.setBoolean("mapreduce.task.profile", true);
+		conf.set("mapreduce.task.profile.params", "-agentlib:hprof=cpu=samples," +
+		   "heap=sites,depth=6,force=n,thread=y,verbose=n,file=%s");
+		conf.set("mapreduce.task.profile.maps", "0-2");
+		conf.set("mapreduce.task.profile.reduces", "0");
+		
 		/** Delete output directory if it exists */
 		FileSystem fs = FileSystem.get(conf);
 		fs.delete(new Path(cmd.getOptionValue("output")), true);
 
 		/** Job configuration */
-		Job job = Job.getInstance(conf, "HadoopSearch");
+		Job job = new Job(conf, "HadoopSearch");
 		job.setJarByClass(Search.class);
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(NullWritable.class);
@@ -93,12 +95,12 @@ public class Search extends Configured implements Tool {
 		/** Set input and output path */
 		boolean DEBUG = true;
 		if(DEBUG){
-			//FileInputFormat.addInputPath(job, new Path("input/web/2008-08/web-2008-08-01T00-00-00Z.txt"));
-			FileInputFormat.addInputPath(job, new Path("/user/niko/16M"));	
+			FileInputFormat.addInputPath(job, new Path("input/*/*"));
+			FileInputFormat.setInputPathFilter(job, Spinn3rInputFilter.class);
 		}
 		else{
 			/** Add all files and than the filter will remove those that should be skipped. */
-			FileInputFormat.addInputPath(job, new Path("/dataset/spinn3r2/*/*/*"));
+			FileInputFormat.addInputPath(job, new Path("/dataset/spinn3r/*/*"));
 			FileInputFormat.setInputPathFilter(job, Spinn3rInputFilter.class);
 		}
 		FileOutputFormat.setOutputPath(job, new Path(cmd.getOptionValue("output")));
@@ -115,53 +117,54 @@ public class Search extends Configured implements Tool {
 	 * provided on input.
 	 * */
 	public static class Spinn3rInputFilter extends Configured implements PathFilter {
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH");
-		List<String> content;
-		Date start;
-		Date end;
-		String cont;
-		String dateS;
-		Date date;
+		SimpleDateFormat formatInput = new SimpleDateFormat("yyyy-MM-dd'T'HH");
+		SimpleDateFormat formatFile = new SimpleDateFormat("yyyy-MM");
+		List<String> searchContent;
+		Date searchStart;
+		Date searchEnd;
+		
+		public Spinn3rInputFilter() throws FileNotFoundException, ParseException{
+			searchStart = formatInput.parse(cmd.getOptionValue("start"));
+			searchEnd = formatInput.parse(cmd.getOptionValue("end"));
+			searchContent = Arrays.asList(cmd.getOptionValues("content"));
+		}
 
 		@Override
-		public boolean accept(Path path) {	    	
-			cont = path.getName().replaceAll("-.*", "").toUpperCase();
-			if(!content.contains(cont)){
-				//System.out.println(path.getName() + "\t" + date + "\t\t NOT OK!");
+		public boolean accept(Path path) {
+			String fileContent;
+			String fileStartString;
+			Calendar fileStart;
+			Calendar fileEnd;
+			
+			fileContent = path.getName().replaceAll("-.*", "").toUpperCase();
+			if(!searchContent.contains(fileContent)){
+				System.out.println(path.getName() + "\t\t NOT OK - WRONG CONTENT TYPE!");
 				return false;
 			}
 
-			dateS = path.getName().replaceAll("web|fb|tw", "").substring(1, 14);
+			fileStartString = path.getName().replaceAll("web|fb|tw", "").substring(1, 8);
 			try {
-				date = format.parse(dateS);
-				if( (date.after(start) || date.equals(start)) && date.before(end)){
-					//System.out.println(path.getName() + "\t" + date + "\t\tOK!");
+				fileStart = Calendar.getInstance();
+				fileStart.setTime(formatFile.parse(fileStartString));
+				fileEnd = Calendar.getInstance();
+				fileEnd.setTime(fileStart.getTime());
+				fileEnd.add(Calendar.MONTH, 1); // each file contains one month
+				if( fileStart.getTime().before(searchEnd) && fileEnd.getTime().after(searchStart) ){
+					System.out.println(path.getName() + "\t" + "\t\t * OK *\t\t for search time: " + searchStart + "-" + searchEnd);
 					return true;
 				}
-
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
-				dateS = null;
-				date = null;
+				System.exit(-1);
 			}
-			//System.out.println(path.getName() + "\t" + date + "\t\tNOT OK!");
+			System.out.println(path.getName() + "\t" + "\t\t *** NOT OK ***\t for search time: " + searchStart + "-" + searchEnd);
 			return false;
-		}
-
-		public Spinn3rInputFilter() throws FileNotFoundException, ParseException{
-			//PrintStream out = new PrintStream(new FileOutputStream("output.txt"));
-			//System.setOut(out);
-			start = format.parse(cmd.getOptionValue("start"));
-			end = format.parse(cmd.getOptionValue("end"));
-			content = Arrays.asList(cmd.getOptionValues("content"));
 		}
 	}
 
 	public static class Map extends Mapper<LongWritable, Text, Text, NullWritable> {
 		private CommandLine cmdMap;
 		private DocumentFilter filter;
-		//private Spinn3rDocument d;
 		long t1, t2;
 		boolean t;
 		
@@ -172,7 +175,6 @@ public class Search extends Configured implements Tool {
 			filter = new DocumentFilter(cmdMap);
 			t2 = System.nanoTime();
 			context.getCounter(ProcessingTime.SETUP).increment(t2-t1);
-			//d = new Spinn3rDocument();
 		}
 
 		@Override
@@ -183,7 +185,6 @@ public class Search extends Configured implements Tool {
 			 * */
 			t1 = System.nanoTime();
 			Spinn3rDocument d = new Spinn3rDocument(value.toString());
-			//d.fillFields(value.toString());
 			t2 = System.nanoTime();
 			context.getCounter(ProcessingTime.PARSING).increment(t2-t1);
 			
@@ -191,9 +192,11 @@ public class Search extends Configured implements Tool {
 			 * Return only those documents that satisfy search conditions
 			 * */ 
 			t1 = System.nanoTime();
-			//TODO fix that this will work
-			if(!d.docId.equals("2009052607_00017235_W"))
+			//TODO fix for large contents
+			if(d.content.length() < 10000)
 				t = filter.documentSatisfies(d);
+			else
+				t = false;
 			t2 = System.nanoTime();
 			context.getCounter(ProcessingTime.FILTERING).increment(t2-t1);
 			
@@ -207,15 +210,15 @@ public class Search extends Configured implements Tool {
 				}
 				
 			}*/
-			
-			//d.clearFields();
 		}
 		
-		/**
+		
 		@Override
 		public void cleanup(Context context){
+			long time = context.getCounter(ProcessingTime.PARSING).getValue();
+			System.out.println("Time for parsing: "+time+"ns ==== "+((float) time / 1000000)+"ms");
 		}
-		*/
+		
 	}
 }
 
