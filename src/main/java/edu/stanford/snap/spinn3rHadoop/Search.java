@@ -36,7 +36,8 @@ public class Search extends Configured implements Tool {
 	enum ProcessingTime{
 		PARSING,
 		FILTERING,
-		SETUP
+		SETUP,
+		SKIPPED
 	}
 	private static CommandLine cmd = null;
 
@@ -69,7 +70,7 @@ public class Search extends Configured implements Tool {
 		/** JVM PROFILING */
 		conf.setBoolean("mapreduce.task.profile", true);
 		conf.set("mapreduce.task.profile.params", "-agentlib:hprof=cpu=samples," +
-		   "heap=sites,depth=6,force=n,thread=y,verbose=n,file=%s");
+		   "heap=sites,depth=20,force=n,thread=y,verbose=n,file=%s");
 		conf.set("mapreduce.task.profile.maps", "0-2");
 		conf.set("mapreduce.task.profile.reduces", "0");
 		
@@ -93,7 +94,7 @@ public class Search extends Configured implements Tool {
 		job.setOutputFormatClass(TextOutputFormat.class);
 		
 		/** Set input and output path */
-		boolean DEBUG = false;
+		boolean DEBUG = true;
 		if(DEBUG){
 			FileInputFormat.addInputPath(job, new Path("input/*/*"));
 			FileInputFormat.setInputPathFilter(job, Spinn3rInputFilter.class);
@@ -193,10 +194,13 @@ public class Search extends Configured implements Tool {
 			 * */ 
 			t1 = System.nanoTime();
 			//TODO fix for large contents
-			if(d.content != null && d.content.length() < 10000)
+			if(d.content != null && d.content.length() < 10000){
 				t = filter.documentSatisfies(d);
-			else
+			}
+			else{
+				context.getCounter(ProcessingTime.SKIPPED).increment(1);
 				t = false;
+			}
 			t2 = System.nanoTime();
 			context.getCounter(ProcessingTime.FILTERING).increment(t2-t1);
 			
@@ -212,11 +216,8 @@ public class Search extends Configured implements Tool {
 			}*/
 		}
 		
-		
 		@Override
 		public void cleanup(Context context){
-			long time = context.getCounter(ProcessingTime.PARSING).getValue();
-			System.out.println("Time for parsing: "+time+"ns ==== "+((float) time / 1000000)+"ms");
 		}
 		
 	}
