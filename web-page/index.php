@@ -1,3 +1,10 @@
+<?php
+// Report all PHP errors (see changelog)
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,15 +64,32 @@
 <div class="row">
 <div class="col-lg-12">
 <div class="well bs-component  page-header">
-<form class="form-horizontal">
+<form class="form-horizontal" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <fieldset>
+
+<?php
+if (isset($_POST['search'])) {
+  echo "<pre>";
+  var_dump($_POST);
+  echo "</pre>";
+/*
+http://php.net/manual/en/ref.dir.php
+*/
+  
+  $file = fopen('../queue/test.txt', 'w');
+  fwrite($file, "This is a test");
+  fclose($file);
+  
+} else {
+?>
+
 
 <!-- Date -->
 <legend>Select date</legend>
 <div class="form-group">
     <label  class="col-lg-2 control-label">Start</label>
     <div class="col-lg-10">
-        <input type="text" class="form-control" id="inputEmail" placeholder="eg. 2008-08-01T01">
+        <input name="start" type="text" class="form-control" id="inputEmail" placeholder="eg. 2008-08-01T01">
     </div>
 </div>
 <div class="form-group">
@@ -554,8 +578,10 @@
 </div>
 <!-- Remove versions -->
 
-
+<!-- TODO: popravi v input -->
 <p><a class="btn btn-primary btn-lg center-block">Search</a></p>
+<input type="submit" name="search" value="Search" />
+
 </fieldset>
 </form>
 </div>
@@ -563,6 +589,9 @@
 </div>
 </div>
 
+<?php
+}
+?>
 
 
 <!-- Footer -->
