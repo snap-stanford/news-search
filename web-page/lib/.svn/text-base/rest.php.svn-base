@@ -1,0 +1,366 @@
+<?php
+class REST {
+    private $method = '';
+	private $args = Array();
+	private $user = '';
+	private $user_id_clanice = '';
+	private $user_clanica = '';
+	private $config = null;
+
+    public function __construct($conf) {
+    	$this->config = $conf;		
+    	// Check authentication
+		if (!isset($_SERVER['PHP_AUTH_USER'])) {
+			header('WWW-Authenticate: Basic realm="studentupn"');
+			$this->fail('You are not authorized.', 401);
+		}
+		$allowed_users = explode(',', $this->config->getSetting("users.allowed"));
+		if (array_search($_SERVER['PHP_AUTH_USER'], $allowed_users) === false) {
+			header('WWW-Authenticate: Basic realm="studentupn"');
+			$this->fail('You are not authorized.', 401);			
+		}
+		$this->user = $_SERVER['PHP_AUTH_USER'];
+		$user_parts = explode('_', $this->user);
+		if (isset($user_parts[2])) {
+			$this->user_id_clanice = $user_parts[2];
+			$this->user_clanica = $this->getClanicaKratica($this->user_id_clanice);
+		} else {
+			$admins = explode(',', $this->config->getSetting("users.admin"));
+			if (array_search($_SERVER['PHP_AUTH_USER'], $allowed_users) === false) {
+				header('WWW-Authenticate: Basic realm="studentupn"');
+				$this->fail('You are not authorized.', 401);			
+			} else {
+				$this->user_id_clanice = 'ALL';
+				$this->user_clanica = 'ALL';		
+			}
+		}
+		
+		// Get the request method	
+    	$this->method = $_SERVER['REQUEST_METHOD'];
+		if ($this->method == 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER)) {
+			if ($_SERVER['HTTP_X_HTTP_METHOD'] == 'DELETE') {
+				$this->method = 'DELETE';
+			} else if ($_SERVER['HTTP_X_HTTP_METHOD'] == 'PUT') {
+				$this->method = 'PUT';
+			} else {
+				$this->fail("Invalid Request Method in HTTP_X_HTTP_METHOD", 405);
+    		}
+		}
+		
+		// Get the parameters
+		// We are expecting something like /some/path/studentupn.php/arg1/arg2
+		$fname = basename($_SERVER['SCRIPT_NAME']);
+		$uriparts = explode($fname, $_SERVER['REQUEST_URI']); 
+		if ($uriparts === false || count($uriparts) < 2) {
+			$this->fail("Invalid URI", 400);
+		}
+		// This now splits /arg1/arg2
+		$args = explode('/', $uriparts[1]);
+		if (count($args) < 2) {
+			$this->fail("No arguments specified. Nothing to do.", 400);
+		}
+		array_shift($args);
+		$this->args = $args;
+	} //function __construct
+	
+	public function processAPI() {
+		switch ($this->args[0]) {
+			case "student":
+				$this->processStudent();
+				break;
+			default:
+				$this->fail("Endpoint not recognized.", 400);
+		}
+	} //function processAPI
+
+	private function processStudent() {
+		switch ($this->method) {
+			case "GET":
+				if (!isset($this->args[1])) {
+					$this->fail("Listing of all students NOT allowed.", 403);
+				}
+				if (!preg_match('/^[0-9]{8,10}$/i', $this->args[1])) {
+					$this->fail("Invalid student ID (VPISNA).", 406);
+				} 
+				
+				try {
+					$db = new Db(
+						$this->config->getSetting("database.dsn"), 
+				  		$this->config->getSetting("database.user"), 
+				  		$this->config->getSetting("database.password")
+					);
+										
+					$student = $db->getUserVpisna($this->args[1]);
+					if ($student === false) {
+						$this->fail("Student not found.", 404);	
+					} else {
+						if ($this->user_clanica != 'ALL' && $this->user_clanica != trim($student['clanica_kratica'])) {
+							$this->fail('You are not authorized.', 401);
+						}
+						$this->response($student, 200);						
+					}
+				} catch (Exception $e) {
+					$this->fail($e->getMessage(), 500);
+				}
+				break;
+			case "POST":
+				if (isset($this->args[1])) {
+					// Expecting a single student here, ID specified.
+					if ($_SERVER['CONTENT_TYPE'] == "application/x-www-form-urlencoded") {
+						if (!Validator::vpisna($this->args[1])) {
+							$this->fail("Invalid student ID (VPISNA).", 406);
+						}
+						$student = $this->insertStudentPOST($this->args[1]);
+						$this->response($student, 200);
+					} else if ($_SERVER['CONTENT_TYPE'] == "application/json") {
+						if (!Validator::vpisna($this->args[1])) {
+							$this->fail("Invalid student ID (VPISNA).", 406);
+						}					
+						$student = $this->insertStudentJSON($this->args[1]);
+						$this->response($student, 200);
+					} else {
+						$this->fail("Unsupported content type. Expecting: application/json or application/x-www-form-urlencoded.", 500);
+					}
+				} else {
+					// Expecting a list of students, JSON only
+					if ($_SERVER['CONTENT_TYPE'] != "application/json") {
+						$this->fail("Unsupported content type. Expecting: application/json.", 500);
+					}
+					$indata = file_get_contents('php://input');
+					$injson = json_decode($indata, true);
+					if ($injson == null) {
+						$this->fail("Incorrectly formatted json input.", 500);
+					}
+					$this->insertStudentJSONList($injson);
+				}
+				break;
+			default:
+				$this->fail("Method not allowed.", 405);
+		}
+	} //function processStudent
+	
+	private function insertStudentJSONList($injson) {
+		$results = array();
+		$db = null;
+		
+		try {
+			$db = new Db(
+				$this->config->getSetting("database.dsn"), 
+		  		$this->config->getSetting("database.user"), 
+		  		$this->config->getSetting("database.password")
+			);
+		} catch (Exception $e) {
+			$this->fail($e->getMessage(), 500);
+		}
+		
+		foreach ($injson as $row) {
+			if (!isset($row['vpisna']) || !Validator::vpisna($row['vpisna'])) {
+				array_push($results, array("error" => "Missing or invalid vpisna.", "input" => json_encode($row)));
+				continue;
+			}
+			if (!isset($row['ime']) || !Validator::ime($row['ime'])) {
+				array_push($results, array("error" => "Missing or invalid ime.", "input" => json_encode($row)));
+				continue;
+			}
+			if (!isset($row['priimek']) || !Validator::ime($row['priimek'])) {
+				array_push($results, array("error" => "Missing or invalid priimek.", "input" => json_encode($row)));
+				continue;
+			}
+			$clanica = "";
+			if (!isset($row['clanica_kratica']) && !isset($row['id_clanice'])) {
+				array_push($results, array("error" => "Missing: clanica_kratica OR id_clanica", "input" => json_encode($row)));
+				continue;
+			} else if (isset($row['clanica_kratica']) && isset($row['id_clanice'])) {
+				array_push($results, array("error" => "Set only one of clanica_kratica or id_clanice", "input" => json_encode($row)));
+				continue;
+			} else {
+				if (isset($row['clanica_kratica'])) {
+					$clanica = $row['clanica_kratica'];
+				} else {
+					try {
+						$clanica = $db->getClanicaKratica($row['id_clanice']);
+					} catch (Exception $e) {
+						array_push($results, array("error" => "Can't get clanica_kratica from id_clanice", "input" => json_encode($row)));
+						continue;
+					}
+				}
+			}
+			if ($this->user_clanica != 'ALL' && $this->user_clanica != $clanica) {
+				array_push($results, array("error" => "You are not authorized.", "input" => json_encode($row)));
+				continue;
+			}
+
+			
+			if (!isset($row['datum_rojstva']) || !Validator::usaDate($row['datum_rojstva'])) {
+				array_push($results, array("error" => "Missing or invalid: datum_rojstva", "input" => json_encode($row)));
+				continue;
+			}		
+			try {
+				$db->insertStudent($row['ime'], $row['priimek'], $clanica, $row['vpisna'], $row['datum_rojstva']);
+				$student = $db->getUserVpisna($row['vpisna']);
+				array_push($results, json_encode($student));
+			} catch (Exception $e) {
+				array_push($results, array("error" => $e->getMessage(), "input" => json_encode($row)));
+				continue;
+			}
+		}
+		$this->response($results, 200);
+	} //function insertStudentJSONList	
+	
+	private function insertStudentJSON($vpisna) {
+		$indata = file_get_contents('php://input');
+		$injson = json_decode($indata, true);
+		if ($injson == null) {
+			$this->fail("Incorrectly formatted json input.", 500);
+		}
+		
+		if (!isset($injson['ime']) || !Validator::ime($injson['ime'])) {
+			$this->fail("Missing or invalid: ime", 500);
+		}
+		if (!isset($injson['priimek']) || !Validator::ime($injson['priimek'])) {
+			$this->fail("Missing or invalid: priimek", 500);
+		}
+
+		$clanica = "";
+		if (!isset($injson['clanica_kratica']) && !isset($injson['id_clanice'])) {
+			$this->fail("Missing: clanica_kratica OR id_clanica", 500);
+		} else if (isset($injson['clanica_kratica']) && isset($injson['id_clanice'])){
+			$this->fail("Set only one of clanica_kratica or id_clanice", 500);
+		} else {
+			if (isset($injson['clanica_kratica'])) $clanica = $injson['clanica_kratica'];
+			else $clanica = $this->getClanicaKratica($injson['id_clanice']); 
+		}
+		
+		if (!isset($injson['datum_rojstva']) || !Validator::usaDate($injson['datum_rojstva'])) {
+			$this->fail("Missing or invalid: datum_rojstva", 500);
+		}
+		return $this->insertStudent($vpisna, $injson['ime'], $injson['priimek'], $clanica, $injson['datum_rojstva']);	
+	} //function insertStudentJSON
+	
+	private function insertStudentPOST($vpisna) {
+		if (!isset($_POST['ime']) || !Validator::ime($_POST['ime'])) {
+			$this->fail("Missing or invalid: ime", 500);
+		}
+		if (!isset($_POST['priimek']) || !Validator::ime($_POST['priimek'])) {
+			$this->fail("Missing or invalid: priimek", 500);
+		}
+		
+		$clanica = "";
+		if (!isset($_POST['clanica_kratica']) && !isset($_POST['id_clanice'])) {
+			$this->fail("Missing: clanica_kratica OR id_clanica", 500);
+		} else if (isset($_POST['clanica_kratica']) && isset($_POST['id_clanice'])){
+			$this->fail("Set only one of clanica_kratica or id_clanice", 500);
+		} else {
+			if (isset($_POST['clanica_kratica'])) $clanica = $_POST['clanica_kratica'];
+			else $clanica = $this->getClanicaKratica($_POST['id_clanice']); 
+		}
+
+		if (!isset($_POST['datum_rojstva']) || !Validator::usaDate($_POST['datum_rojstva'])) {
+			$this->fail("Missing or invalid: datum_rojstva", 500);
+		}
+		return $this->insertStudent($vpisna, $_POST['ime'], $_POST['priimek'], $clanica, $_POST['datum_rojstva']);
+	} //function insertStudentPOST
+	
+	private function insertStudent($vpisna, $ime, $priimek, $clanica_kratica, $datum_rojstva) {
+		try {
+			$db = new Db(
+				$this->config->getSetting("database.dsn"), 
+		  		$this->config->getSetting("database.user"), 
+		  		$this->config->getSetting("database.password")
+			);
+			if ($this->user_clanica != 'ALL' && $this->user_clanica != $clanica_kratica) {
+				$this->fail('You are not authorized.', 401);
+			}
+			$db->insertStudent($ime, $priimek, $clanica_kratica, $vpisna, $datum_rojstva);
+			$student = $db->getUserVpisna($vpisna);
+			if ($student === false) {
+				$this->fail("Student not found after insert.", 500);	
+			} else {
+				//var_dump($student);
+				return $student;
+			}
+		} catch (Exception $e) {
+			$this->fail($e->getMessage(), 500);
+		} //try
+	} //function insertStudent() 
+	
+	private function getClanicaKratica($id_clanice) {
+		try {
+			$db = new Db(
+				$this->config->getSetting("database.dsn"), 
+		  		$this->config->getSetting("database.user"), 
+		  		$this->config->getSetting("database.password")
+			);
+			return $db->getClanicaKratica($id_clanice);
+		} catch (Exception $e) {
+			$this->fail($e->getMessage(), 500);
+		} //try
+	} //function getClanicaKratica
+	
+	private function fail($msg, $status = 500) {
+		$data = Array('error' => $msg);
+		$this->response($data, $status);
+	}
+	
+	private function response($data, $status = 200) {
+        header("HTTP/1.1 " . $status . " " . $this->requestStatus($status));
+        header("Access-Control-Allow-Orgin: *");
+        header("Access-Control-Allow-Methods: *");
+        header("Content-Type: application/json; charset=utf-8");
+        		
+        echo json_encode($data);
+		exit(0);
+    } //function response
+    
+    private function requestStatus($code) {
+        $status = array(
+        	100 => 'Continue',  
+			101 => 'Switching Protocols',  
+			200 => 'OK',
+			201 => 'Created',  
+			202 => 'Accepted',  
+			203 => 'Non-Authoritative Information',  
+			204 => 'No Content',  
+			205 => 'Reset Content',  
+			206 => 'Partial Content',  
+			300 => 'Multiple Choices',  
+			301 => 'Moved Permanently',  
+			302 => 'Found',  
+			303 => 'See Other',  
+			304 => 'Not Modified',  
+			305 => 'Use Proxy',  
+			306 => '(Unused)',  
+			307 => 'Temporary Redirect',  
+			400 => 'Bad Request',  
+			401 => 'Unauthorized',  
+			402 => 'Payment Required',  
+			403 => 'Forbidden',  
+			404 => 'Not Found',  
+			405 => 'Method Not Allowed',  
+			406 => 'Not Acceptable',  
+			407 => 'Proxy Authentication Required',  
+			408 => 'Request Timeout',  
+			409 => 'Conflict',  
+			410 => 'Gone',  
+			411 => 'Length Required',  
+			412 => 'Precondition Failed',  
+			413 => 'Request Entity Too Large',  
+			414 => 'Request-URI Too Long',  
+			415 => 'Unsupported Media Type',  
+			416 => 'Requested Range Not Satisfiable',  
+			417 => 'Expectation Failed',  
+			500 => 'Internal Server Error',  
+			501 => 'Not Implemented',  
+			502 => 'Bad Gateway',  
+			503 => 'Service Unavailable',  
+			504 => 'Gateway Timeout',  
+			505 => 'HTTP Version Not Supported'
+        );
+		if (array_key_exists($code, $status)) {
+			return $status[$code];
+		} else {
+			return $status[500];
+		}
+    } // function requestStatus
+} //class REST
+?>

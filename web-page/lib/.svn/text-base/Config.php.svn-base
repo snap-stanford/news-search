@@ -1,0 +1,39 @@
+<?php
+class Config {
+  var $configArray;
+
+  /**
+   * Prebere konfiguracijo iz datoteke .ini in jo zabeleži
+   * v polje $configArray.
+   *
+   * @param string $filename Konfiguracijska datoteka .ini 
+   * @return Config
+   */
+  function Config($filename) {
+    if (!is_readable($filename)) {
+      throw new Exception("Ne morem brati konfiguracijske datoteke: " . $filename);
+    }
+    
+    $this->configArray = parse_ini_file($filename, true);
+  }
+  
+  
+  /**
+   * Vrne vrednost nastavitve iz konfiguracijske datoteke.
+   * Razume format "natavitev" ali "sekcija.nastavitev".
+   *
+   * @param string $setting Ime nastavitve
+   * @return Vrednost nastavitve
+   */
+  function getSetting($setting) {
+    $names = explode('.', $setting);
+    if (count($names) == 1) {
+      return $this->configArray[$names[0]];
+    } else if (count($names) == 2) {
+      return $this->configArray[$names[0]][$names[1]];
+    } else {
+      throw new Exception("Vhodni paramter ni pravilen: $setting");
+    }
+  }
+}
+?>
