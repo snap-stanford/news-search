@@ -2,14 +2,18 @@ package edu.stanford.snap.spinn3rHadoop.utils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Spinn3rDocument {
+	private static SimpleDateFormat dateFormat= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	public String docId = null;
 	public URL url = null;
 	public String urlString = null;
-	public String date = null;
+	public Date date = null;
 	public String title = null;
 	public String title_raw = null;
 	public String content = null;
@@ -77,7 +81,7 @@ public class Spinn3rDocument {
 			throw new IllegalArgumentException("Document has no URL");
 		}
 		if (date != null) {
-			str.append("D\t").append(escapeNewLines(date)).append("\n");
+			str.append("D\t").append(escapeNewLines(dateFormat.format(date))).append("\n");
 		} else {
 			throw new IllegalArgumentException("Document has no date!");
 		}
@@ -113,7 +117,7 @@ public class Spinn3rDocument {
 			throw new IllegalArgumentException("Document has no URL");
 		}
 		if (date != null) {
-			str.append("D:").append(escapeNewLinesAndTabs(date)).append("\t");
+			str.append("D:").append(escapeNewLinesAndTabs(dateFormat.format(date))).append("\t");
 		} else {
 			throw new IllegalArgumentException("Document has no date!");
 		}
@@ -173,7 +177,12 @@ public class Spinn3rDocument {
 				}
 				break;
 			case 'D':	// Date
-				this.date = value;
+				try {
+					this.date = dateFormat.parse(value);
+				} catch (ParseException e) {
+					e.printStackTrace();
+					System.exit(-1);
+				}
 				break;
 			case 'T':	// Title
 				this.title = value;
