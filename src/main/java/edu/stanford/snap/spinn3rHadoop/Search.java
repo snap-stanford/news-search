@@ -68,11 +68,11 @@ public class Search extends Configured implements Tool {
 		conf.setStrings("args", args);
 		
 		/** JVM PROFILING */
-		conf.setBoolean("mapreduce.task.profile", true);
-		conf.set("mapreduce.task.profile.params", "-agentlib:hprof=cpu=samples," +
-		   "heap=sites,depth=20,force=n,thread=y,verbose=n,file=%s");
-		conf.set("mapreduce.task.profile.maps", "0-2");
-		conf.set("mapreduce.task.profile.reduces", "0");
+		//conf.setBoolean("mapreduce.task.profile", true);
+		//conf.set("mapreduce.task.profile.params", "-agentlib:hprof=cpu=samples," +
+		//  "heap=sites,depth=20,force=n,thread=y,verbose=n,file=%s");
+		//conf.set("mapreduce.task.profile.maps", "0-2");
+		//conf.set("mapreduce.task.profile.reduces", "0");
 		
 		/** Delete output directory if it exists */
 		FileSystem fs = FileSystem.get(conf);
