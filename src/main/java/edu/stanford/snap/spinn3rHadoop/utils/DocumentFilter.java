@@ -1,8 +1,11 @@
 package edu.stanford.snap.spinn3rHadoop.utils;
 
 import java.net.MalformedURLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +30,7 @@ import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument.Quote;
  * */
 
 public class DocumentFilter {
+	private String formatInput = "yyyy-MM-dd'T'HH";
 	private static String AND_SIGN = "&&";
 	private Matcher matcher;
 	private String [] langWL;
@@ -49,9 +53,19 @@ public class DocumentFilter {
 	private boolean removeEmptyContent;
 	private boolean removeNoQuotes;
 	private boolean caseInsensitive;
+	private Date start;
+	private Date end;
 
 
 	public DocumentFilter(CommandLine cmd){
+		try {
+			this.start = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("start"));
+			this.end = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("end"));
+		} catch (ParseException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		
 		this.removeNoLanguage = cmd.hasOption("removeNoLanguage");
 		this.removeGarbled = cmd.hasOption("removeGarbled");
 		this.removeUnparsableURL = cmd.hasOption("removeUnparsableURL");
@@ -158,6 +172,12 @@ public class DocumentFilter {
 	 * Check if document d satisfies search conditions.
 	 * */
 	public boolean documentSatisfies(Spinn3rDocument d){
+		/** Filter by date:
+		 * */
+		if(d.date.before(start) || d.date.after(end)){
+			return false;
+		}
+		
 		/** Filter by language:
 		 * 		Black and White lists only apply for documents with probable language.
 		 * */
@@ -255,7 +275,7 @@ public class DocumentFilter {
 				+ "S	en	0.999996\n"
 				+ "G	false	1.0\n"
 				+ "U	http://codeproject.com/KB/silverlight/convertsilverlightcontrol.aspx\n"
-				+ "D	2008-08-01 00:00:00\n"
+				+ "D	2013-09-02 17:00:00\n"
 				+ "T	codeproject how to convert a silverlight control to a visual webgui \n"
 				+ "C	how to convert a silverlight control to \n"
 				+ "L	1206		http://schemas.microsoft.com/winfx/2006/xaml/presentation\n"
