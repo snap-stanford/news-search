@@ -1,3 +1,5 @@
+java.hprof*
+deploy.sh
 .DS_Store
 .idea/
 .classpath
