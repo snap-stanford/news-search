@@ -3,7 +3,6 @@ package edu.stanford.snap.spinn3rHadoop.utils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Spinn3rDocument {
@@ -42,11 +41,11 @@ public class Spinn3rDocument {
 			}
 		}
 	}
-	
+
 	private static String escapeNewLines(String in){
 		return in.replaceAll("\n", "&#10;");
 	}
-	
+
 	private static String escapeNewLinesAndTabs(String in){
 		return in.replaceAll("\n", "&#10;").replace("\t", "&#9;");
 	}
@@ -102,7 +101,7 @@ public class Spinn3rDocument {
 		}
 		return str.toString();
 	}
-	
+
 	/*
 	 * Prints the document in the "F5" single-line format.
 	 * */
@@ -145,102 +144,72 @@ public class Spinn3rDocument {
 	 * */
 	public Spinn3rDocument (String doc){
 		for(String line : doc.split("\n")){
-			String[] tokens = line.split("\t", 2);
-			if(tokens.length < 2){
-				System.err.println("THE LINE IS: "+ line);
-				System.err.println("TOKENS ARE: "+ Arrays.asList(tokens));
-			}
-			String type = tokens[0];
-			String value = tokens[1];
+			char type = line.charAt(0);
+			String value = line.substring(2);
 
-			// DocId
-			if (type.equals("I")){
+			switch (type) {
+			case 'I':	// DocId
 				this.docId = value;
-				continue;
-			}
-			// Version
-			else if (type.equals("V")){
+				break;
+			case 'V':	// Version
 				this.version = Spinn3rVersion.valueOf(value);
-				continue;
-			}
-			// Languages
-			else if (type.equals("S")){
+				break;
+			case 'S': 	// Languages
 				String [] split = value.split("\t", 2);
 				String lng = split[0];
 				double prob = Double.valueOf(split[1]);
 				this.langs.add(new Lang(lng, prob));
-				continue;
-			}
-			// Garbled info
-			else if (type.equals("G")){
-				String [] split = value.split("\t", 2);
-				this.isGarbled = Boolean.valueOf(split[0]);
-				this.nonGarbageFraction = Double.valueOf(split[1]);
-				continue;
-			}
-			// Url
-			else if (type.equals("U")){
+				break;
+			case 'G':	// Garbled info
+				String [] split1 = value.split("\t", 2);
+				this.isGarbled = Boolean.valueOf(split1[0]);
+				this.nonGarbageFraction = Double.valueOf(split1[1]);
+				break;
+			case 'U':	// Url
 				urlString = value;
 				try {
 					this.url = new URL(value);
 				} catch (MalformedURLException e) {
 				}
-				continue;
-			}
-			// Date
-			else if (type.equals("D")){
+				break;
+			case 'D':	// Date
 				this.date = value;
-				continue;
-			}
-			// Title
-			else if (type.equals("T")){
+				break;
+			case 'T':	// Title
 				this.title = value;
-				continue;
-			}
-			// Title raw
-			else if (type.equals("F")){
+				break;
+			case 'F':	// Title raw
 				this.title_raw = value;
-				continue;
-			}
-			// Content
-			else if (type.equals("C")){
+				break;
+			case 'C':	// Content
 				this.content = value;
-				continue;
-			}
-			// Content raw
-			else if (type.equals("H")){
+				break;
+			case 'H':	// Content raw
 				this.content_raw = value;
-				continue;
-			}
-			// Links
-			else if (type.equals("L")){
-				String [] split = value.split("\t", 3);
-				int startPos = Integer.valueOf(split[0]);
-				if(split[1].equals("")){
-					this.links.add(new Link(startPos, split[2]));
+				break;
+			case 'L':	// Links
+				String [] split2 = value.split("\t", 3);
+				int startPos = Integer.valueOf(split2[0]);
+				if(split2[1].equals("")){
+					this.links.add(new Link(startPos, split2[2]));
 				}
 				else{
-					int length = Integer.valueOf(split[1]);
-					this.links.add(new Link(startPos, length, split[2]));
+					int length = Integer.valueOf(split2[1]);
+					this.links.add(new Link(startPos, length, split2[2]));
 				}
-				continue;
-			}
-			// Quotes
-			else if (type.equals("Q")){
-				String [] split = value.split("\t", 3);
-				int startPos = Integer.valueOf(split[0]);
-				int length = Integer.valueOf(split[1]);
-				this.quotes.add(new Quote(startPos, length, split[2]));
-				System.out.print("");
-				continue;
-			}
-			// Unknown value
-			else{
+				break;
+			case 'Q':	// Quotes
+				String [] split3 = value.split("\t", 3);
+				int startPos1 = Integer.valueOf(split3[0]);
+				int length = Integer.valueOf(split3[1]);
+				this.quotes.add(new Quote(startPos1, length, split3[2]));
+				break;
+			default:	// Unknown value
 				throw new IllegalArgumentException("Illegal type character '"+type+"' found during parsing spinn3r document.");
 			}
 		}
 	}
-	
+
 	/*
 	 * Append a language to this document.
 	 * */
