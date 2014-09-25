@@ -48,7 +48,7 @@ public class Search extends Configured implements Tool {
 		if(cmd == null){
 			System.exit(-1);
 		}
-		
+
 		/** Fill in arguments from file */
 		String [] new_args = ParseCLI.replaceArgumentsFromFile(args, cmd);
 		cmd = ParseCLI.parse(new_args);
@@ -66,14 +66,14 @@ public class Search extends Configured implements Tool {
 		Configuration conf = getConf();
 		conf.set("textinputformat.record.delimiter","\n\n");
 		conf.setStrings("args", args);
-		
+
 		/** JVM PROFILING */
 		//conf.setBoolean("mapreduce.task.profile", true);
 		//conf.set("mapreduce.task.profile.params", "-agentlib:hprof=cpu=samples," +
 		//  "heap=sites,depth=20,force=n,thread=y,verbose=n,file=%s");
 		//conf.set("mapreduce.task.profile.maps", "0-2");
 		//conf.set("mapreduce.task.profile.reduces", "0");
-		
+
 		/** Delete output directory if it exists */
 		FileSystem fs = FileSystem.get(conf);
 		fs.delete(new Path(cmd.getOptionValue("output")), true);
@@ -92,9 +92,9 @@ public class Search extends Configured implements Tool {
 		/** Set input and output formats */
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
-		
+
 		/** Set input and output path */
-		boolean DEBUG = false;
+		boolean DEBUG = true;
 		if(DEBUG){
 			FileInputFormat.addInputPath(job, new Path("input/*/*"));
 			FileInputFormat.setInputPathFilter(job, Spinn3rInputFilter.class);
@@ -105,12 +105,12 @@ public class Search extends Configured implements Tool {
 			FileInputFormat.setInputPathFilter(job, Spinn3rInputFilter.class);
 		}
 		FileOutputFormat.setOutputPath(job, new Path(cmd.getOptionValue("output")));
-		
+
 		job.waitForCompletion(true);
-		
+
 		return 0;
 	}
-	
+
 	/**
 	 * Spinn3rInputFilter is a filter for input.
 	 * It determines whether some file should be processed or not
@@ -118,46 +118,74 @@ public class Search extends Configured implements Tool {
 	 * provided on input.
 	 * */
 	public static class Spinn3rInputFilter extends Configured implements PathFilter {
-		SimpleDateFormat formatInput = new SimpleDateFormat("yyyy-MM-dd'T'HH");
-		SimpleDateFormat formatFile = new SimpleDateFormat("yyyy-MM");
+		String formatInput = "yyyy-MM-dd'T'HH";
+		String formatFile = "yyyy-MM";
+		String formatFileDaily = "yyyy-MM-dd";
 		List<String> searchContent;
 		Date searchStart;
 		Date searchEnd;
-		
+
 		public Spinn3rInputFilter() throws FileNotFoundException, ParseException{
-			searchStart = formatInput.parse(cmd.getOptionValue("start"));
-			searchEnd = formatInput.parse(cmd.getOptionValue("end"));
+			
+			/** Parse job limitation form command line */
+			searchStart = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("start"));
+			searchEnd = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("end"));
 			searchContent = Arrays.asList(cmd.getOptionValues("content"));
 		}
 
+		
+		/**
+		 * Accept method gets one file path and should return T/F whether to process it or not. 
+		 * */
 		@Override
 		public boolean accept(Path path) {
 			String fileContent;
-			String fileStartString;
+			String fileStartString = null;
 			Calendar fileStart;
 			Calendar fileEnd;
+			Date d = null;
+			int fileLength = -1;
+
 			
+			/** Remove if the file contents does not match */
 			fileContent = path.getName().replaceAll("-.*", "").toUpperCase();
 			if(!searchContent.contains(fileContent)){
 				System.out.println(path.getName() + "\t\t NOT OK - WRONG CONTENT TYPE!");
 				return false;
 			}
-
-			fileStartString = path.getName().replaceAll("web|fb|tw", "").substring(1, 8);
+			
+			/** Check date constraints */
 			try {
-				fileStart = Calendar.getInstance();
-				fileStart.setTime(formatFile.parse(fileStartString));
-				fileEnd = Calendar.getInstance();
-				fileEnd.setTime(fileStart.getTime());
-				fileEnd.add(Calendar.MONTH, 1); // each file contains one month
-				if( fileStart.getTime().before(searchEnd) && fileEnd.getTime().after(searchStart) ){
-					System.out.println(path.getName() + "\t" + "\t\t * OK *\t\t for search time: " + searchStart + "-" + searchEnd);
-					return true;
+				/** Special case for daily files from the current month */
+				if(path.getName().contains("daily")){
+					fileLength = Calendar.DAY_OF_MONTH;
+					fileStartString = path.getName().replaceAll("web|fb|tw", "").substring(1, 11);
+					d = new SimpleDateFormat(formatFileDaily).parse(fileStartString);
+				}
+				/** Regular monthly files */
+				else{
+					fileLength = Calendar.MONTH;
+					fileStartString = path.getName().replaceAll("web|fb|tw", "").substring(1, 8);
+					d = new SimpleDateFormat(formatFile).parse(fileStartString);
 				}
 			} catch (ParseException e) {
 				e.printStackTrace();
 				System.exit(-1);
 			}
+			
+			/** Calculate file start and end date */
+			fileStart = Calendar.getInstance();
+			fileStart.setTime(d);
+			fileEnd = Calendar.getInstance();
+			fileEnd.setTime(fileStart.getTime());
+			fileEnd.add(fileLength, 1);
+			
+			/** Check if we should process it or not, depending on date */
+			if( fileStart.getTime().before(searchEnd) && fileEnd.getTime().after(searchStart) ){
+				System.out.println(path.getName() + "\t" + "\t\t * OK *\t\t for search time: " + searchStart + "-" + searchEnd);
+				return true;
+			}
+			
 			System.out.println(path.getName() + "\t" + "\t\t *** NOT OK ***\t for search time: " + searchStart + "-" + searchEnd);
 			return false;
 		}
@@ -168,7 +196,7 @@ public class Search extends Configured implements Tool {
 		private DocumentFilter filter;
 		long t1, t2;
 		boolean t;
-		
+
 		@Override
 		public void setup(Context context){
 			t1 = System.nanoTime();
@@ -188,7 +216,7 @@ public class Search extends Configured implements Tool {
 			Spinn3rDocument d = new Spinn3rDocument(value.toString());
 			t2 = System.nanoTime();
 			context.getCounter(ProcessingTime.PARSING).increment(t2-t1);
-			
+
 			/**
 			 * Return only those documents that satisfy search conditions
 			 * */ 
@@ -203,7 +231,7 @@ public class Search extends Configured implements Tool {
 			}
 			t2 = System.nanoTime();
 			context.getCounter(ProcessingTime.FILTERING).increment(t2-t1);
-			
+
 			/**
 			if (t){
 				if(cmdMap.hasOption("formatF5")){
@@ -212,14 +240,14 @@ public class Search extends Configured implements Tool {
 				else{
 					context.write(new Text(d.toString()), NullWritable.get());
 				}
-				
+
 			}*/
 		}
-		
+
 		@Override
 		public void cleanup(Context context){
 		}
-		
+
 	}
 }
 
@@ -231,6 +259,6 @@ public class Search extends Configured implements Tool {
 -content WEB FB TW
 -titleWL '[Oo]bama' '[Bb]arack|[Mm]ichelle'
 -titleBL '[Mm]ccain' 'perry rosenstein'
- 
+
 -output out -start 2010-01-01T00 -end 2010-01-10T23 -content WEB FB TW -titleWL '[Ss]lovenia'
  * */
