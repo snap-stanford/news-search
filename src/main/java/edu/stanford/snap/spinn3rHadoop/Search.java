@@ -2,6 +2,7 @@ package edu.stanford.snap.spinn3rHadoop;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -94,8 +95,7 @@ public class Search extends Configured implements Tool {
 		job.setOutputFormatClass(TextOutputFormat.class);
 
 		/** Set input and output path */
-		boolean DEBUG = true;
-		if(DEBUG){
+		if(InetAddress.getLocalHost().getHostName().contains("Niko")){ 	// for local debugging
 			FileInputFormat.addInputPath(job, new Path("input/*/*"));
 			FileInputFormat.setInputPathFilter(job, Spinn3rInputFilter.class);
 		}
