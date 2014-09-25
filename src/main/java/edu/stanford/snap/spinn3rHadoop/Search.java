@@ -233,6 +233,8 @@ public class Search extends Configured implements Tool {
 			context.getCounter(ProcessingTime.FILTERING).increment(t2-t1);
 
 			/**
+			 * Output if satisfies
+			 * */
 			if (t){
 				if(cmdMap.hasOption("formatF5")){
 					context.write(new Text(d.toStringF5()), NullWritable.get());
@@ -240,14 +242,12 @@ public class Search extends Configured implements Tool {
 				else{
 					context.write(new Text(d.toString()), NullWritable.get());
 				}
-
-			}*/
+			}
 		}
 
 		@Override
 		public void cleanup(Context context){
 		}
-
 	}
 }
 
