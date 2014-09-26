@@ -13,3 +13,15 @@ news-search/api/index.php/queue_id UPDATE => posljes json
   finished: true/false
   progress: %
 }
+
+
+/queue/2014....3/
+  -- _NEW
+  -- command
+  -- lang_whitelist.txt
+  ...
+  
+news-search/api/queue
+
+file_url: http://snap.stanford.edu/news-search/api/queue/2014..../lang_whitelist.txt
+
