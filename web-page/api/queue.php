@@ -1,7 +1,7 @@
 <?php
 
-//error_reporting(E_ALL);
-//ini_set('display_errors', '1');
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
 
 // Direktorij kjer je aplikacija - ostala konfiguracija je v $basedir/etc/config.php
 define("BASE_PATH", dirname(__FILE__)."/../");
@@ -31,9 +31,11 @@ $GLOBALS['log'] = $log;
 $GLOBALS['users'] = array("snap");
 
 // Branje konfiguracije
-$config = new Config(CONFIG_FILE);
+//TODO which config???
+//$config = new Config(CONFIG_FILE);
+//$myApi = new REST($config);
 
-$myApi = new REST($config);
+$myApi = new REST();
 $myApi->processAPI();
 
 ?>

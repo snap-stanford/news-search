@@ -66,13 +66,6 @@ ini_set('display_errors', '1');
 <form enctype="multipart/form-data" class="form-horizontal" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <fieldset>
 
-<!--<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post"
-      enctype="multipart/form-data">
-    <label for="file">Filename:</label>
-    <input type="file" name="file" id="file"><br>
-    <input type="submit" name="search" value="Search">
-</form>-->
-
 <?php
 
 /**
