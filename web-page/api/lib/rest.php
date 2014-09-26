@@ -89,7 +89,7 @@ class REST {
                                             while (($txt = readdir($pathH)) !== false) {
                                                 $ext = pathinfo($txt, PATHINFO_EXTENSION);
                                                 if($ext == 'txt') {
-                                                    echo $txt . '<br>';
+                                                    //echo $txt . '<br>';
                                                     array_push($txtFiles, $txt);
                                                 }
                                             }
