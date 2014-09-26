@@ -2,11 +2,13 @@
 class REST {
     private $method = '';
     private $args = Array();
-    private $user = '';
+    private $user = ''; // TODO: remove
 
     public function __construct() {
         // Check authentication
         // Note that we rely on the web server to do the password checking
+        /* TODO: delete
+        
         if (!isset($_SERVER['PHP_AUTH_USER'])) {
             header('WWW-Authenticate: Basic realm="studentupn"');
             $this->fail('You are not authorized.', 401);
@@ -16,7 +18,7 @@ class REST {
             $this->fail('You are not authorized.', 401);
         }
         $this->user = $_SERVER['PHP_AUTH_USER'];
-
+        */
         // Get the request method
         $this->method = $_SERVER['REQUEST_METHOD'];
         if ($this->method == 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER)) {
