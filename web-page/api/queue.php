@@ -4,9 +4,9 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 // Direktorij kjer je aplikacija - ostala konfiguracija je v $basedir/etc/config.php
-define("BASE_PATH", dirname(__FILE__)."/../");
-define("LIB_PATH", dirname(__FILE__)."/../lib/");
-define("LOG_PATH", dirname(__FILE__)."/../log/");
+define("BASE_PATH", dirname(__FILE__)."/");
+define("LIB_PATH", dirname(__FILE__)."/lib/");
+define("LOG_PATH", dirname(__FILE__)."/log/");
 
 // Includes
 require_once(LIB_PATH."log.php");
