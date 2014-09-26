@@ -101,7 +101,7 @@ class REST {
                                         $JSON = array('newJob' => true, 'jobName' => $file ,'command' => $command, 'files' => $txtFiles);
 
                                         // set this job status to submitted
-                                        rename($path.'/'.$new, $path.'/'.$submitted);
+                                        //rename($path.'/'.$new, $path.'/'.$submitted);
 
                                         // stop searching for jobs
                                         break;
