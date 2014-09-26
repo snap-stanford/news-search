@@ -68,19 +68,110 @@ ini_set('display_errors', '1');
 <fieldset>
 
 <?php
+
+/**
+ * Write out command to the file given
+ */
+function write_command($path){
+    $file = fopen($path, 'w');
+
+    // start and end
+    $fields = array("start","end");
+    foreach ($fields as $field){
+        if(isset($_POST[$field])){
+            fwrite($file, '-'.$field.' '.$_POST[$field]."\n");
+        }
+    }
+
+    // content
+    fwrite($file, '-content ');
+    foreach(array('WEB', 'TW', 'FB') as $cnt){
+        if(isset($_POST['content'.$cnt])){
+            fwrite($file, $cnt.' ');
+        }
+    }
+    fwrite($file, "\n");
+
+    // write all white and black lists
+    $fields = array('lang', 'url', 'keyword', 'title', 'content', 'quote');
+    foreach ($fields as $f1){
+        foreach(array('WL', 'BL') as $lst){
+            $field = $f1.$lst;
+            if(isset($_POST[$field.'F']) && $_POST[$field.'F'] != ''){
+                fwrite($file, '-'.$field.' '.$_POST[$field.'F']."\n");
+            }else{
+                $empty = true;
+                for ($i=1; $i<=5; $i++) {
+                    $fld = $field.$i;
+                    if(isset($_POST[$fld]) && $_POST[$fld] != ''){
+                        if($empty){
+                            fwrite($file, '-'.$field.' ');
+                            $empty = false;
+                        }
+                        fwrite($file, '\''.$_POST[$fld].'\' ');
+                    }
+                }
+                if(!$empty){
+                    fwrite($file, "\n");
+                }
+            }
+        }
+    }
+
+    // remove versions
+    $empty = true;
+    foreach(array('A', 'B', 'C', 'D', 'E') as $i) {
+        if(isset($_POST['removeVersions'.$i])){
+            if($empty){
+                fwrite($file, '-removeVersions ');
+                $empty = false;
+            }
+            fwrite($file, $i.' ');
+        }
+    }
+    if(!$empty){
+        fwrite($file, "\n");
+    }
+
+    // boolean options
+    $fields = array('removeNoLanguage', 'removeGarbled', 'removeUnparsableURL', 'removeEmptyTitle',
+        'removeEmptyContent', 'removeNoQuotes', 'caseInsensitive', 'formatF5');
+    foreach ($fields as $field) {
+        if (isset($_POST[$field])) {
+            fwrite($file, '-'.$field."\n");
+        }
+    }
+    fclose($file);
+}
+
+/**
+ * If something is submitted
+ */
 if (isset($_POST['search'])) {
-  echo "<pre>";
-  var_dump($_POST);
-  echo "</pre>";
-/*
-http://php.net/manual/en/ref.dir.php
-*/
-  
-  $file = fopen('../queue/test.txt', 'w');
-  fwrite($file, "This is a test");
-  fclose($file);
-  
-} else {
+    echo "<pre>";
+    var_dump($_POST);
+    echo "</pre>";
+    /*
+    http://php.net/manual/en/ref.dir.php
+    */
+
+    //TODO - set proper folder name, not debug one
+    // make folder
+    date_default_timezone_set('America/Los_Angeles');
+
+    $folder = 'job_'.date('Y-m-d\TH-i-s_\U').uniqid();
+    //$folder = 'job';
+    $path = '../queue/'.$folder;
+    mkdir($path);
+
+    // set state to new
+    $file = fopen($path.'/_NEW', 'w');
+    fclose($file);
+
+    // write command to file
+    write_command($path.'/command');
+
+}
 ?>
 
 
@@ -89,13 +180,13 @@ http://php.net/manual/en/ref.dir.php
 <div class="form-group">
     <label  class="col-lg-2 control-label">Start</label>
     <div class="col-lg-10">
-        <input name="start" type="text" class="form-control" id="inputEmail" placeholder="eg. 2008-08-01T01">
+        <input name="start" type="text" class="form-control" placeholder="eg. 2008-08-01T01">
     </div>
 </div>
 <div class="form-group">
     <label for="inputPassword" class="col-lg-2 control-label">End</label>
     <div class="col-lg-10">
-        <input type="text" class="form-control" id="inputPassword" placeholder="eg. 2014-08-31T23">
+        <input name="end" type="text" class="form-control" placeholder="eg. 2014-08-31T23">
     </div>
 </div>
 <!-- Date -->
@@ -107,17 +198,17 @@ http://php.net/manual/en/ref.dir.php
 
         <div class="checkbox">
             <label>
-                <input type="checkbox" checked> Web
+                <input name="contentWEB" type="checkbox" checked> Web
             </label>
         </div>
         <div class="checkbox">
             <label>
-                <input type="checkbox" checked> Twitter
+                <input name="contentTW" type="checkbox" checked> Twitter
             </label>
         </div>
         <div class="checkbox">
             <label>
-                <input type="checkbox" checked> Facebook
+                <input name="contentFB" type="checkbox" checked> Facebook
             </label>
         </div>
         <div class="checkbox"></div>
@@ -132,24 +223,24 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
 
         <div class="col-lg-2-no-padding padding-right-2">
-            <input type="text" class="form-control" id="langW1" placeholder="eg. en">
+            <input name="langWL1" type="text" class="form-control" id="langW1" placeholder="eg. en">
         </div>
         <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-            <input type="text" class="form-control" id="langW2" placeholder="">
+            <input name="langWL2" type="text" class="form-control" id="langW2" placeholder="">
         </div>
         <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-            <input type="text" class="form-control" id="langW3" placeholder="">
+            <input name="langWL3" type="text" class="form-control" id="langW3" placeholder="">
         </div>
         <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-            <input type="text" class="form-control" id="langW4" placeholder="">
+            <input name="langWL4" type="text" class="form-control" id="langW4" placeholder="">
         </div>
         <div class="col-lg-2-no-padding padding-left-2">
-            <input type="text" class="form-control" id="langW5" placeholder="">
+            <input name="langWL5" type="text" class="form-control" id="langW5" placeholder="">
         </div>
 
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="langW">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="langWLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
     </div>
@@ -160,30 +251,30 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input type="text" class="form-control" id="langB1" placeholder="eg. vi">
+                <input name="langBL1" type="text" class="form-control" id="langB1" placeholder="eg. vi">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="langB2" placeholder="">
+                <input name="langBL2" type="text" class="form-control" id="langB2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="langB3" placeholder="">
+                <input name="langBL3" type="text" class="form-control" id="langB3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="langB4" placeholder="">
+                <input name="langBL4" type="text" class="form-control" id="langB4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input type="text" class="form-control" id="langB5" placeholder="">
+                <input name="langBL5" type="text" class="form-control" id="langB5" placeholder="">
             </div>
         </div>
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="langB">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="langBLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
 
         <div class="checkbox col-lg-10">
             <label>
-                <input type="checkbox" checked> Remove records without probable language
+                <input name="removeNoLanguage" type="checkbox" checked> Remove records without probable language
             </label>
         </div>
     </div>
@@ -198,24 +289,24 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input type="text" class="form-control" id="urlW1" placeholder="eg. stanford.edu">
+                <input name="urlWL1" type="text" class="form-control" id="urlW1" placeholder="eg. stanford.edu">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="urlW2" placeholder="">
+                <input name="urlWL2" type="text" class="form-control" id="urlW2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="urlW3" placeholder="">
+                <input name="urlWL3" type="text" class="form-control" id="urlW3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="urlW4" placeholder="">
+                <input name="urlWL4" type="text" class="form-control" id="urlW4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input type="text" class="form-control" id="urlW5" placeholder="">
+                <input name="urlWL5" type="text" class="form-control" id="urlW5" placeholder="">
             </div>
         </div>
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="urlW">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="urlWLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
     </div>
@@ -226,30 +317,30 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input type="text" class="form-control" id="urlB1" placeholder="eg. spam.com">
+                <input name="urlBL1" type="text" class="form-control" id="urlB1" placeholder="eg. spam.com">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="urlB2" placeholder="">
+                <input name="urlBL2" type="text" class="form-control" id="urlB2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="urlB3" placeholder="">
+                <input name="urlBL3" type="text" class="form-control" id="urlB3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="urlB4" placeholder="">
+                <input name="urlBL4" type="text" class="form-control" id="urlB4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input type="text" class="form-control" id="urlB5" placeholder="">
+                <input name="urlBL5" type="text" class="form-control" id="urlB5" placeholder="">
             </div>
         </div>
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="urlB">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="urlBLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
 
         <div class="checkbox col-lg-10">
             <label>
-                <input type="checkbox" checked> Remove records with unparsable URL
+                <input name="removeUnparsableURL" type="checkbox" checked> Remove records with unparsable URL
             </label>
         </div>
     </div>
@@ -264,24 +355,24 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input type="text" class="form-control" id="keywordsW1" placeholder="eg. stanford">
+                <input name="keywordWL1" type="text" class="form-control" id="keywordsW1" placeholder="eg. stanford">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="keywordsW2" placeholder="">
+                <input name="keywordWL2" type="text" class="form-control" id="keywordsW2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="keywordsW3" placeholder="">
+                <input name="keywordWL3" type="text" class="form-control" id="keywordsW3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="keywordsW4" placeholder="">
+                <input name="keywordWL4" type="text" class="form-control" id="keywordsW4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input type="text" class="form-control" id="keywordsW5" placeholder="">
+                <input name="keywordWL5" type="text" class="form-control" id="keywordsW5" placeholder="">
             </div>
         </div>
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="keywordsW">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="keywordWLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
     </div>
@@ -292,31 +383,25 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input type="text" class="form-control" id="keywordsB1" placeholder="eg. spam">
+                <input name="keywordBL1" type="text" class="form-control" id="keywordsB1" placeholder="eg. spam">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="keywordsB2" placeholder="">
+                <input name="keywordBL2" type="text" class="form-control" id="keywordsB2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="keywordsB3" placeholder="">
+                <input name="keywordBL3" type="text" class="form-control" id="keywordsB3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="keywordsB4" placeholder="">
+                <input name="keywordBL4" type="text" class="form-control" id="keywordsB4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input type="text" class="form-control" id="keywordsB5" placeholder="">
+                <input name="keywordBL5" type="text" class="form-control" id="keywordsB5" placeholder="">
             </div>
         </div>
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="keywordsB">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="keywordBLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
-        </div>
-
-        <div class="checkbox col-lg-10">
-            <label>
-                <input type="checkbox" checked> Remove records with unparsable URL
-            </label>
         </div>
     </div>
 </div>
@@ -329,24 +414,24 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input type="text" class="form-control" id="titleW1" placeholder="eg. Stanford">
+                <input name="titleWL1" type="text" class="form-control" id="titleW1" placeholder="eg. Stanford">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="titleW2" placeholder="">
+                <input name="titleWL2" type="text" class="form-control" id="titleW2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="titleW3" placeholder="">
+                <input name="titleWL3" type="text" class="form-control" id="titleW3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="titleW4" placeholder="">
+                <input name="titleWL4" type="text" class="form-control" id="titleW4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input type="text" class="form-control" id="titleW5" placeholder="">
+                <input name="titleWL5" type="text" class="form-control" id="titleW5" placeholder="">
             </div>
         </div>
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="titleW">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="titleWLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
     </div>
@@ -357,30 +442,30 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input type="text" class="form-control" id="titleB1" placeholder="eg. Spam">
+                <input name="titleBL1" type="text" class="form-control" id="titleB1" placeholder="eg. Spam">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="titleB2" placeholder="">
+                <input name="titleBL2" type="text" class="form-control" id="titleB2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="titleB3" placeholder="">
+                <input name="titleBL3" type="text" class="form-control" id="titleB3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="titleB4" placeholder="">
+                <input name="titleBL4" type="text" class="form-control" id="titleB4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input type="text" class="form-control" id="titleB5" placeholder="">
+                <input name="titleBL5" type="text" class="form-control" id="titleB5" placeholder="">
             </div>
         </div>
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="titleB">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="titleBLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
 
         <div class="checkbox col-lg-10">
             <label>
-                <input type="checkbox" checked> Remove records without title
+                <input name="removeEmptyTitle" type="checkbox" checked> Remove records without title
             </label>
         </div>
     </div>
@@ -394,24 +479,24 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input type="text" class="form-control" id="contentW1" placeholder="eg. Class">
+                <input name="contentWL1" type="text" class="form-control" id="contentW1" placeholder="eg. Class">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="contentW2" placeholder="">
+                <input name="contentWL2" type="text" class="form-control" id="contentW2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="contentW3" placeholder="">
+                <input name="contentWL3" type="text" class="form-control" id="contentW3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="contentW4" placeholder="">
+                <input name="contentWL4" type="text" class="form-control" id="contentW4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input type="text" class="form-control" id="contentW5" placeholder="">
+                <input name="contentWL5" type="text" class="form-control" id="contentW5" placeholder="">
             </div>
         </div>
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="contentW">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="contentWLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
     </div>
@@ -422,30 +507,30 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input type="text" class="form-control" id="contentB1" placeholder="eg. Spam">
+                <input name="contentBL1" type="text" class="form-control" id="contentB1" placeholder="eg. Spam">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="contentB2" placeholder="">
+                <input name="contentBL2" type="text" class="form-control" id="contentB2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="contentB3" placeholder="">
+                <input name="contentBL3" type="text" class="form-control" id="contentB3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="contentB4" placeholder="">
+                <input name="contentBL4" type="text" class="form-control" id="contentB4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input type="text" class="form-control" id="contentB5" placeholder="">
+                <input name="contentBL5" type="text" class="form-control" id="contentB5" placeholder="">
             </div>
         </div>
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="contentB">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="contentBLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
 
         <div class="checkbox col-lg-10">
             <label>
-                <input type="checkbox" checked> Remove records without content
+                <input name="removeEmptyContent" type="checkbox" checked> Remove records without content
             </label>
         </div>
     </div>
@@ -460,24 +545,24 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input type="text" class="form-control" id="quotesW1" placeholder="eg. He said that ...">
+                <input name="quoteWL1" type="text" class="form-control" id="quotesW1" placeholder="eg. He said that ...">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="quotesW2" placeholder="">
+                <input name="quoteWL2" type="text" class="form-control" id="quotesW2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="quotesW3" placeholder="">
+                <input name="quoteWL3" type="text" class="form-control" id="quotesW3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="quotesW4" placeholder="">
+                <input name="quoteWL4" type="text" class="form-control" id="quotesW4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input type="text" class="form-control" id="quotesW5" placeholder="">
+                <input name="quoteWL5" type="text" class="form-control" id="quotesW5" placeholder="">
             </div>
         </div>
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="quotesW">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="quoteWLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
     </div>
@@ -488,30 +573,30 @@ http://php.net/manual/en/ref.dir.php
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input type="text" class="form-control" id="quotesB1" placeholder="eg. He did not say ...">
+                <input name="quoteBL1" type="text" class="form-control" id="quotesB1" placeholder="eg. He did not say ...">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="quotesB2" placeholder="">
+                <input name="quoteBL2" type="text" class="form-control" id="quotesB2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="quotesB3" placeholder="">
+                <input name="quoteBL3" type="text" class="form-control" id="quotesB3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input type="text" class="form-control" id="quotesB4" placeholder="">
+                <input name="quoteBL4" type="text" class="form-control" id="quotesB4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input type="text" class="form-control" id="quotesB5" placeholder="">
+                <input name="quoteBL5" type="text" class="form-control" id="quotesB5" placeholder="">
             </div>
         </div>
         <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="quotesB">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="quoteBLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
 
         <div class="checkbox col-lg-10">
             <label>
-                <input type="checkbox" checked> Remove records without quotes
+                <input name="removeNoQuotes" type="checkbox"> Remove records without quotes
             </label>
         </div>
     </div>
@@ -525,27 +610,27 @@ http://php.net/manual/en/ref.dir.php
 
         <div class="checkbox">
             <label>
-                <input type="checkbox"> A
+                <input name="removeVersionsA" type="checkbox"> A
             </label>
         </div>
         <div class="checkbox">
             <label>
-                <input type="checkbox"> B
+                <input name="removeVersionsB" type="checkbox"> B
             </label>
         </div>
         <div class="checkbox">
             <label>
-                <input type="checkbox"> C
+                <input name="removeVersionsC" type="checkbox"> C
             </label>
         </div>
         <div class="checkbox">
             <label>
-                <input type="checkbox"> D
+                <input name="removeVersionsD" type="checkbox"> D
             </label>
         </div>
         <div class="checkbox">
             <label>
-                <input type="checkbox"> E
+                <input name="removeVersionsE" type="checkbox"> E
             </label>
         </div>
         <div class="checkbox"></div>
@@ -560,17 +645,17 @@ http://php.net/manual/en/ref.dir.php
 
         <div class="checkbox">
             <label>
-                <input type="checkbox" checked> Remove garbled text
+                <input name="removeGarbled" type="checkbox" checked> Remove garbled text
             </label>
         </div>
         <div class="checkbox">
             <label>
-                <input type="checkbox"> Make all matching case insesitive
+                <input name="caseInsensitive" type="checkbox"> Make all matching case insensitive
             </label>
         </div>
         <div class="checkbox">
             <label>
-                <input type="checkbox"> Use one line output format (F5)
+                <input name="formatF5" type="checkbox"> Use one line output format (F5)
             </label>
         </div>
         <div class="checkbox"></div>
@@ -578,9 +663,8 @@ http://php.net/manual/en/ref.dir.php
 </div>
 <!-- Remove versions -->
 
-<!-- TODO: popravi v input -->
-<p><a class="btn btn-primary btn-lg center-block">Search</a></p>
-<input type="submit" name="search" value="Search" />
+<!--<input class="btn btn-success form-control" type="submit" name="search" value="Search" />-->
+<input class="btn btn-success btn-lg center-block" type="submit" name="search" value="Search" />
 
 </fieldset>
 </form>
@@ -590,7 +674,7 @@ http://php.net/manual/en/ref.dir.php
 </div>
 
 <?php
-}
+
 ?>
 
 
@@ -613,7 +697,7 @@ http://php.net/manual/en/ref.dir.php
     <footer>
         <div class="row">
             <div class="col-lg-12">
-                <p>Made by <a href="http://thomaspark.me" rel="nofollow">Thomas Park</a>. Contact him at <a href="mailto:thomas@bootswatch.com">thomas@bootswatch.com</a>.</p>
+                <p>Bootstrap theme made by <a href="http://thomaspark.me" rel="nofollow">Thomas Park</a>. Contact him at <a href="mailto:thomas@bootswatch.com">thomas@bootswatch.com</a>.</p>
                 <p>Code released under the <a href="https://github.com/thomaspark/bootswatch/blob/gh-pages/LICENSE">MIT License</a>.</p>
                 <p>Based on <a href="http://getbootstrap.com" rel="nofollow">Bootstrap</a>. Icons from <a href="http://fortawesome.github.io/Font-Awesome/" rel="nofollow">Font Awesome</a>. Web fonts from <a href="http://www.google.com/webfonts" rel="nofollow">Google</a>.</p>
 
