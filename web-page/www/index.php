@@ -58,14 +58,20 @@ ini_set('display_errors', '1');
 </div>
 <!-- Navbar -->
 
-
 <div class="container">
 <div class="bs-docs-section page-header">
 <div class="row">
 <div class="col-lg-12">
 <div class="well bs-component  page-header">
-<form class="form-horizontal" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+<form enctype="multipart/form-data" class="form-horizontal" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <fieldset>
+
+<!--<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post"
+      enctype="multipart/form-data">
+    <label for="file">Filename:</label>
+    <input type="file" name="file" id="file"><br>
+    <input type="submit" name="search" value="Search">
+</form>-->
 
 <?php
 
@@ -144,12 +150,43 @@ function write_command($path){
     fclose($file);
 }
 
+function copy_uploaded_files($path){
+    $SIZE_LIMIT = 10000;
+    $possibleFiles = array('langWLF', 'langBLF', 'urlWLF', 'urlBLF', 'keywordWLF', 'keywordBLF',
+        'titleWLF', 'titleBLF', 'contentWLF', 'contentBLF', 'quoteWLF', 'quoteBLF');
+    foreach($possibleFiles as $file){
+        // if present
+        if($_FILES[$file]['error'] != UPLOAD_ERR_NO_FILE) {
+            //check size limits
+            if ($_FILES[$file]['size'] > $SIZE_LIMIT ||
+                $_FILES[$file]['error'] == UPLOAD_ERR_FORM_SIZE ||
+                $_FILES[$file]['error'] == UPLOAD_ERR_INI_SIZE) {
+                errmsg("Error: your file is too big!");
+            } elseif ( $_FILES[$file]["error"] > 0) {
+                errmsg("Error: some other error with code ".$_FILES[$file]["error"]);
+            } else {
+                // if all ok move it to job folder
+                if (!move_uploaded_file($_FILES[$file]['tmp_name'], $path.$file.'.txt')){
+                    errmsg("File was *** NOT *** successfully uploaded");
+                }
+            }
+        }
+    }
+}
+
+function errmsg($msg) {
+    echo "<h2>Error submitting your files</h2>\n";
+    echo "<p>$msg</p>\n";
+    echo "<p>Please try <a href=\"javascript:history.go(-1)\">again</a>.</p>";
+}
+
 /**
  * If something is submitted
  */
 if (isset($_POST['search'])) {
     echo "<pre>";
     var_dump($_POST);
+    var_dump($_FILES);
     echo "</pre>";
     /*
     http://php.net/manual/en/ref.dir.php
@@ -161,16 +198,18 @@ if (isset($_POST['search'])) {
 
     $folder = 'job_'.date('Y-m-d\TH-i-s_\U').uniqid();
     //$folder = 'job';
-    $path = '../queue/'.$folder;
+    $path = '../queue/'.$folder.'/';
     mkdir($path);
 
     // set state to new
-    $file = fopen($path.'/_NEW', 'w');
+    $file = fopen($path.'_NEW', 'w');
     fclose($file);
 
     // write command to file
-    write_command($path.'/command');
+    write_command($path.'command');
 
+    // upload files
+    copy_uploaded_files($path);
 }
 ?>
 
