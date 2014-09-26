@@ -1,7 +1,7 @@
-news-search/api/index.php GET => izpise queue
+news-search/api/queue.php GET => izpise queue
 
 
-news-search/api/index.php/queue_id GET => vrne json za queue
+news-search/api/queue.php/queue_id GET => vrne json za queue
 { start_date: xxx;
   lang_whitelist: http://snap/news... 
 }
