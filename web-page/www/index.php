@@ -191,7 +191,7 @@ if (isset($_POST['search'])) {
 
     $folder = 'job_'.date('Y-m-d\TH-i-s_\U').uniqid();
     //$folder = 'job';
-    $path = '../queue/'.$folder.'/';
+    $path = '../api/queue/'.$folder.'/';
     mkdir($path);
 
     // set state to new

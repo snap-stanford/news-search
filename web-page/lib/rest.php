@@ -50,7 +50,7 @@ class REST {
                 if (!isset($this->args[0])) { // TODO: cehck if args[0] is correct (I might be off by one)
                     // TODO: dump a JSON containing all the items in ../queue that are NOT running/finished
 
-                    $dir = '../queue';
+                    $dir = '../api/queue';
                     $new = '_NEW';
                     $submitted = '_SUBMITTED';
                     $commandFile = 'command';
