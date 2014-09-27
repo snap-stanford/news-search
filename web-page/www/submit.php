@@ -4,10 +4,13 @@
 // Report all PHP errors (see changelog)
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
+include_once '../lib/job_handler.php';
 
 /**
  * Global variables and settings
  */
+date_default_timezone_set('America/Los_Angeles');
+$QUEUE_PATH = '../api/queue/';
 $FILE_SIZE_LIMIT = 10000;
 $SLEEP = 5;
 $PROBLEMS = false;
@@ -150,21 +153,26 @@ function sccmsg() {
  * If something is submitted
  */
 if (isset($_POST['search'])) {
+
     // make folder
-    date_default_timezone_set('America/Los_Angeles');
-    $jobID = 'job_'.date('Y-m-d\TH-i-s_\U').uniqid();
-    $path = '../api/queue/'.$jobID.'/';
-    mkdir($path);
+    $timestamp = time();
+    $jobID = 'job_'.date('Y-m-d\TH-i-s', $timestamp).'_U'.uniqid();
+    $jobPath = $QUEUE_PATH.$jobID.'/';
+    mkdir($jobPath);
+
+    // store date
+    $currentJOB = new Job($jobID);
+    $currentJOB->set_start_date(date('Y-m-d H:i:s', $timestamp));
 
     // set state to new
-    $file = fopen($path.'_NEW', 'w');
+    $file = fopen($jobPath.'_NEW', 'w');
     fclose($file);
 
     // write command to file
-    write_command($path.'command', $jobID);
+    write_command($jobPath.'command', $jobID);
 
     // upload files
-    copy_uploaded_files($path);
+    copy_uploaded_files($jobPath);
 
     // testing purposes
     //errmsg('testing');
@@ -184,7 +192,7 @@ if (isset($_POST['search'])) {
     //echo "</pre>";
 }
 
-include_once "header.html";
+include_once "../lib/header.html";
 echo $NOTIFICATION;
-include_once "footer.html";
+include_once "../lib/footer.html";
 ?>

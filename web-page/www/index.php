@@ -1,11 +1,12 @@
 <?php
-include_once "header.html";
+include_once "../lib/header.html";
 ?>
 
 <div class="control-label">
     <h1 class="space-after-title">New search</h1>
     <legend>Instructions</legend>
-    <p>TODO: write short instructions and caveats!</p>
+    <h4 class="text-warning col-lg-offset-2">Use the search wisely! Running the search occupies a lot of resources.</h4>
+
 </div>
 
 <form enctype="multipart/form-data" class="form-horizontal" method="post" action="submit.php">
@@ -505,5 +506,5 @@ include_once "header.html";
 </form>
 
 <?php
-include_once "footer.html";
+include_once "../lib/footer.html";
 ?>
