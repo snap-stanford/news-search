@@ -1,211 +1,15 @@
 <?php
-// Report all PHP errors (see changelog)
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-
+include_once "header.html";
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>News Search</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap downloaded from http://getbootstrap.com/getting-started/ -->
-    <link rel="stylesheet" href="bootstrap-3.2.0-dist/css/bootstrap.css" media="screen">
-    <!-- <link rel="stylesheet" href="bootstrap-3.2.0-dist/css/bootstrap-theme.css" media="screen"> -->
-
-    <!-- jQuery downloaded from http://jquery.com/download/ -->
-    <script src="jQuery/jquery-1.11.1.js" media="screen"></script>
-
-    <!-- Jasny Bootstrap extension downloaded from http://jasny.github.io/bootstrap/getting-started/ -->
-    <link rel="stylesheet" href="jasny-bootstrap/css/jasny-bootstrap.css" media="screen">
-    <script src="jasny-bootstrap/js/jasny-bootstrap.js"></script>
-
-    <!-- Bootstrap theme downloaded from http://bootswatch.com/cerulean/ -->
-    <link rel="stylesheet" href="cerulean/bootstrap.css" media="screen">
-
-    <!-- My code -->
-    <script src="my/disable-input-when-file.js"></script>
-
-</head>
-<body>
-
-<!-- Navbar -->
-
-<div class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container">
-        <div class="navbar-header">
-            <a href="#" class="navbar-brand">News Search</a>
-            <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-        </div>
-        <div class="navbar-collapse collapse" id="navbar-main">
-            <ul class="nav navbar-nav navbar-left">
-                <li><a href="#">About</a></li>
-            </ul>
-
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Search Results</a></li>
-            </ul>
-        </div>
-
-    </div>
+<div class="control-label">
+    <h1 class="space-after-title">New search</h1>
+    <legend>Instructions</legend>
+    <p>TODO: write short instructions and caveats!</p>
 </div>
-<!-- Navbar -->
 
-<div class="container">
-<div class="bs-docs-section page-header">
-<div class="row">
-<div class="col-lg-12">
-<div class="well bs-component  page-header">
-<form enctype="multipart/form-data" class="form-horizontal" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+<form enctype="multipart/form-data" class="form-horizontal" method="post" action="submit.php">
 <fieldset>
-
-<?php
-
-/**
- * Write out command to the file given
- */
-function write_command($path){
-    $file = fopen($path, 'w');
-
-    // start and end
-    $fields = array("start","end");
-    foreach ($fields as $field){
-        if(isset($_POST[$field])){
-            fwrite($file, '-'.$field.' '.$_POST[$field]."\n");
-        }
-    }
-
-    // content
-    fwrite($file, '-content ');
-    foreach(array('WEB', 'TW', 'FB') as $cnt){
-        if(isset($_POST['content'.$cnt])){
-            fwrite($file, $cnt.' ');
-        }
-    }
-    fwrite($file, "\n");
-
-    // write all white and black lists
-    $fields = array('lang', 'url', 'keyword', 'title', 'content', 'quote');
-    foreach ($fields as $f1){
-        foreach(array('WL', 'BL') as $lst){
-            $field = $f1.$lst;
-            if(isset($_POST[$field.'F']) && $_POST[$field.'F'] != ''){
-                fwrite($file, '-'.$field.' '.$_POST[$field.'F']."\n");
-            }else{
-                $empty = true;
-                for ($i=1; $i<=5; $i++) {
-                    $fld = $field.$i;
-                    if(isset($_POST[$fld]) && $_POST[$fld] != ''){
-                        if($empty){
-                            fwrite($file, '-'.$field.' ');
-                            $empty = false;
-                        }
-                        fwrite($file, '\''.$_POST[$fld].'\' ');
-                    }
-                }
-                if(!$empty){
-                    fwrite($file, "\n");
-                }
-            }
-        }
-    }
-
-    // remove versions
-    $empty = true;
-    foreach(array('A', 'B', 'C', 'D', 'E') as $i) {
-        if(isset($_POST['removeVersions'.$i])){
-            if($empty){
-                fwrite($file, '-removeVersions ');
-                $empty = false;
-            }
-            fwrite($file, $i.' ');
-        }
-    }
-    if(!$empty){
-        fwrite($file, "\n");
-    }
-
-    // boolean options
-    $fields = array('removeNoLanguage', 'removeGarbled', 'removeUnparsableURL', 'removeEmptyTitle',
-        'removeEmptyContent', 'removeNoQuotes', 'caseInsensitive', 'formatF5');
-    foreach ($fields as $field) {
-        if (isset($_POST[$field])) {
-            fwrite($file, '-'.$field."\n");
-        }
-    }
-    fclose($file);
-}
-
-function copy_uploaded_files($path){
-    $SIZE_LIMIT = 10000;
-    $possibleFiles = array('langWLF', 'langBLF', 'urlWLF', 'urlBLF', 'keywordWLF', 'keywordBLF',
-        'titleWLF', 'titleBLF', 'contentWLF', 'contentBLF', 'quoteWLF', 'quoteBLF');
-    foreach($possibleFiles as $file){
-        // if present
-        if($_FILES[$file]['error'] != UPLOAD_ERR_NO_FILE) {
-            //check size limits
-            if ($_FILES[$file]['size'] > $SIZE_LIMIT ||
-                $_FILES[$file]['error'] == UPLOAD_ERR_FORM_SIZE ||
-                $_FILES[$file]['error'] == UPLOAD_ERR_INI_SIZE) {
-                errmsg("Error: your file is too big!");
-            } elseif ( $_FILES[$file]["error"] > 0) {
-                errmsg("Error: some other error with code ".$_FILES[$file]["error"]);
-            } else {
-                // if all ok move it to job folder
-                if (!move_uploaded_file($_FILES[$file]['tmp_name'], $path.$file.'.txt')){
-                    errmsg("File was *** NOT *** successfully uploaded");
-                }
-            }
-        }
-    }
-}
-
-function errmsg($msg) {
-    echo "<h2>Error submitting your files</h2>\n";
-    echo "<p>$msg</p>\n";
-    echo "<p>Please try <a href=\"javascript:history.go(-1)\">again</a>.</p>";
-}
-
-/**
- * If something is submitted
- */
-if (isset($_POST['search'])) {
-    echo "<pre>";
-    var_dump($_POST);
-    var_dump($_FILES);
-    echo "</pre>";
-    /*
-    http://php.net/manual/en/ref.dir.php
-    */
-
-    //TODO - set proper folder name, not debug one
-    // make folder
-    date_default_timezone_set('America/Los_Angeles');
-
-    $folder = 'job_'.date('Y-m-d\TH-i-s_\U').uniqid();
-    //$folder = 'job';
-    $path = '../api/queue/'.$folder.'/';
-    mkdir($path);
-
-    // set state to new
-    $file = fopen($path.'_NEW', 'w');
-    fclose($file);
-
-    // write command to file
-    write_command($path.'command');
-
-    // upload files
-    copy_uploaded_files($path);
-}
-?>
-
 
 <!-- Date -->
 <legend>Select date</legend>
@@ -695,51 +499,11 @@ if (isset($_POST['search'])) {
 </div>
 <!-- Remove versions -->
 
-<!--<input class="btn btn-success form-control" type="submit" name="search" value="Search" />-->
 <input class="btn btn-success btn-lg center-block" type="submit" name="search" value="Search" />
 
 </fieldset>
 </form>
-</div>
-</div>
-</div>
-</div>
 
 <?php
-
+include_once "footer.html";
 ?>
-
-
-<!-- Footer -->
-<div class="bs-docs-section">
-    <div id="source-modal" class="modal fade">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">Source Code</h4>
-                </div>
-                <div class="modal-body">
-                    <pre></pre>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <footer>
-        <div class="row">
-            <div class="col-lg-12">
-                <p>Bootstrap theme made by <a href="http://thomaspark.me" rel="nofollow">Thomas Park</a>. Contact him at <a href="mailto:thomas@bootswatch.com">thomas@bootswatch.com</a>.</p>
-                <p>Code released under the <a href="https://github.com/thomaspark/bootswatch/blob/gh-pages/LICENSE">MIT License</a>.</p>
-                <p>Based on <a href="http://getbootstrap.com" rel="nofollow">Bootstrap</a>. Icons from <a href="http://fortawesome.github.io/Font-Awesome/" rel="nofollow">Font Awesome</a>. Web fonts from <a href="http://www.google.com/webfonts" rel="nofollow">Google</a>.</p>
-
-            </div>
-        </div>
-
-    </footer>
-</div>
-<!-- Footer -->
-
-</div>
-</body>
-</html>
