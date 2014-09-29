@@ -87,8 +87,8 @@ public class Search extends Configured implements Tool {
 
 		/** Set Mapper and Reducer, use identity reducer*/
 		job.setMapperClass(Map.class);
-		//job.setReducerClass(Reducer.class);
-		job.setNumReduceTasks(0);
+		job.setReducerClass(Reducer.class);
+		//job.setNumReduceTasks(0);
 
 		/** Set input and output formats */
 		job.setInputFormatClass(TextInputFormat.class);
