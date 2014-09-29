@@ -21,7 +21,7 @@ mb_regex_encoding('UTF-8');
 ob_start('mb_output_handler');
 
 // Set time zone
-date_default_timezone_set('Europe/Ljubljana');
+date_default_timezone_set('America/Los_Angeles');
 
 // Logiranje
 $log = new Log(LOG_PATH . date('Y-m-d') . basename(__FILE__));

@@ -47,8 +47,8 @@ function write_command($path, $jobID){
     foreach ($fields as $f1){
         foreach(array('WL', 'BL') as $lst){
             $field = $f1.$lst;
-            if(isset($_POST[$field.'F']) && $_POST[$field.'F'] != ''){
-                fwrite($file, '-'.$field.' '.$_POST[$field.'F']."\n");
+            if($_FILES[$field.'F']['error'] != UPLOAD_ERR_NO_FILE){
+                fwrite($file, '-'.$field.' '.$field.'F.txt'."\n");
             }else{
                 $empty = true;
                 for ($i=1; $i<=5; $i++) {
@@ -149,6 +149,13 @@ function sccmsg() {
     $NOTIFICATION .= "</div>\n";
 }
 
+/** Recursively delete folder */
+function rrmdir($dir) {
+    foreach(glob($dir . '/*') as $file) {
+        if(is_dir($file)) rrmdir($file); else unlink($file);
+    } rmdir($dir);
+}
+
 /**
  * If something is submitted
  */
@@ -182,6 +189,7 @@ if (isset($_POST['search'])) {
         header("refresh:".$SLEEP.";url=results.php" );
     }
     else{
+        rrmdir($jobPath);
     }
 
     //echo "<pre>";

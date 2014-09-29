@@ -1,0 +1,13 @@
+.space-after-title{
+    margin-bottom:30px;
+}
+
+.no_margin{
+    margin:0px !important;
+}
+
+.table-cell-center {
+    display:table-cell !important;
+    vertical-align:middle !important;
+    text-align:center !important;
+}

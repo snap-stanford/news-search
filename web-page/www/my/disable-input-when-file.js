@@ -32,7 +32,7 @@ $( document ).ready(function() {
         };
     }
 
-    var list = ["lang", "url", "keywords", "title", "content", "quotes"];
+    var list = ["lang", "url", "keyword", "title", "content", "quote"];
     for(var id in list) {
         var wl = list[id] + "W";
         var bl = list[id] + "B";

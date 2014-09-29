@@ -2,11 +2,15 @@
 include_once '../lib/header.html';
 include_once '../lib/job_handler.php';
 
+// Report all PHP errors (see changelog)
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
 /**
  * Global variables and settings
  */
 date_default_timezone_set('America/Los_Angeles');
-$REFRESH_RATE = 10;
+$REFRESH_RATE = 3;
 $PAGE = 1;
 
 // pagination settings
@@ -16,7 +20,7 @@ if(isset($_GET['page'])){
     $PAGE = $_GET['page'];
 }
 
-//header("refresh:".$REFRESH_RATE );
+header("refresh:".$REFRESH_RATE );
 
 ?>
 
@@ -53,15 +57,19 @@ if(isset($_GET['page'])){
                 $class = 'warning';
                 $status = 'QUEUED';
             }
+            elseif($job->is_submitted()){
+                $class = 'warning';
+                $status = 'SUBMITTED';
+            }
             elseif($job->is_running()){
                 $class = 'info';
                 $status = 'RUNNING';
             }
-            elseif($job->is_done_ok()){
+            elseif($job->is_success()){
                 $class = 'success';
                 $status = 'SUCCESS';
             }
-            elseif($job->is_done_nok()){
+            elseif($job->is_fail()){
                 $class = 'danger';
                 $status = 'FAILED';
             }
@@ -69,24 +77,28 @@ if(isset($_GET['page'])){
 
             echo "<tr class='$class' class='text-center'>\n";
 
-            echo "<td class='text-center'>".$date[0]."</td>\n";
-            echo "<td class='text-center'>".$date[1]."</td>\n";
+            echo "<td class='text-center table-cell-center'>".$date[0]."</td>\n";
+            echo "<td class='text-center table-cell-center'>".$date[1]."</td>\n";
             if($job->is_running()){
-                echo "<td class='text-center'>\n";
-                echo "<div class='progress progress-striped active center-block' style='margin-bottom: 0px; width: 100px'>\n";
-                echo "<div class='progress-bar' style='width: ".$job->get_progress()."'></div>\n";
+                $stat = $job->get_progress();
+                echo "<td class='text-center table-cell-center'>\n";
+                echo "<div class='progress progress-striped active center-block' style='margin-bottom: 2px; width: 200px'>\n";
+                echo "<div class='progress-bar' style='width: ".$stat[0]."'></div>\n";
+                echo "</div>\n";
+                echo "<div class='progress progress-striped active center-block' style='margin-bottom: 0px; width: 200px'>\n";
+                echo "<div class='progress-bar' style='width: ".$stat[1]."'></div>\n";
                 echo "</div>\n";
                 echo "</td>\n";
             }else{
-                echo "<td class='text-center'>$status</td>\n";
+                echo "<td class='text-center table-cell-center'>$status</td>\n";
             }
-            if(!$job->is_new()){
-                echo "<td class='text-center'><a target='_blank' href='".$job->get_hadoop_link()."'>link</a></td>\n";
-                echo "<td class='text-center'><a target='_blank' href='".$job->get_results_link()."'>link</a></td>\n";
+            if(!$job->is_new() && !$job->is_submitted()){
+                echo "<td class='text-center table-cell-center'><a target='_blank' href='".$job->get_hadoop_link()."'>link</a></td>\n";
+                echo "<td class='text-center table-cell-center'><a target='_blank' href='".$job->get_results_link()."'>link</a></td>\n";
             }
             else{
-                echo "<td class='text-center'></td>\n";
-                echo "<td class='text-center'></td>\n";
+                echo "<td class='text-center table-cell-center'></td>\n";
+                echo "<td class='text-center table-cell-center'></td>\n";
             }
             echo "</tr>";
         }

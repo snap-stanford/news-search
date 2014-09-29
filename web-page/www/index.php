@@ -192,22 +192,22 @@ include_once "../lib/header.html";
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input name="keywordWL1" type="text" class="form-control" id="keywordsW1" placeholder="eg. stanford">
+                <input name="keywordWL1" type="text" class="form-control" id="keywordW1" placeholder="eg. stanford">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="keywordWL2" type="text" class="form-control" id="keywordsW2" placeholder="">
+                <input name="keywordWL2" type="text" class="form-control" id="keywordW2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="keywordWL3" type="text" class="form-control" id="keywordsW3" placeholder="">
+                <input name="keywordWL3" type="text" class="form-control" id="keywordW3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="keywordWL4" type="text" class="form-control" id="keywordsW4" placeholder="">
+                <input name="keywordWL4" type="text" class="form-control" id="keywordW4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input name="keywordWL5" type="text" class="form-control" id="keywordsW5" placeholder="">
+                <input name="keywordWL5" type="text" class="form-control" id="keywordW5" placeholder="">
             </div>
         </div>
-        <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="keywordsW">
+        <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="keywordW">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
             <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="keywordWLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
@@ -220,22 +220,22 @@ include_once "../lib/header.html";
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input name="keywordBL1" type="text" class="form-control" id="keywordsB1" placeholder="eg. spam">
+                <input name="keywordBL1" type="text" class="form-control" id="keywordB1" placeholder="eg. spam">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="keywordBL2" type="text" class="form-control" id="keywordsB2" placeholder="">
+                <input name="keywordBL2" type="text" class="form-control" id="keywordB2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="keywordBL3" type="text" class="form-control" id="keywordsB3" placeholder="">
+                <input name="keywordBL3" type="text" class="form-control" id="keywordB3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="keywordBL4" type="text" class="form-control" id="keywordsB4" placeholder="">
+                <input name="keywordBL4" type="text" class="form-control" id="keywordB4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input name="keywordBL5" type="text" class="form-control" id="keywordsB5" placeholder="">
+                <input name="keywordBL5" type="text" class="form-control" id="keywordB5" placeholder="">
             </div>
         </div>
-        <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="keywordsB">
+        <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="keywordB">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
             <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="keywordBLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
@@ -382,22 +382,22 @@ include_once "../lib/header.html";
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input name="quoteWL1" type="text" class="form-control" id="quotesW1" placeholder="eg. He said that ...">
+                <input name="quoteWL1" type="text" class="form-control" id="quoteW1" placeholder="eg. He said that ...">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="quoteWL2" type="text" class="form-control" id="quotesW2" placeholder="">
+                <input name="quoteWL2" type="text" class="form-control" id="quoteW2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="quoteWL3" type="text" class="form-control" id="quotesW3" placeholder="">
+                <input name="quoteWL3" type="text" class="form-control" id="quoteW3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="quoteWL4" type="text" class="form-control" id="quotesW4" placeholder="">
+                <input name="quoteWL4" type="text" class="form-control" id="quoteW4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input name="quoteWL5" type="text" class="form-control" id="quotesW5" placeholder="">
+                <input name="quoteWL5" type="text" class="form-control" id="quoteW5" placeholder="">
             </div>
         </div>
-        <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="quotesW">
+        <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="quoteW">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
             <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="quoteWLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
@@ -410,22 +410,22 @@ include_once "../lib/header.html";
     <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
-                <input name="quoteBL1" type="text" class="form-control" id="quotesB1" placeholder="eg. He did not say ...">
+                <input name="quoteBL1" type="text" class="form-control" id="quoteB1" placeholder="eg. He did not say ...">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="quoteBL2" type="text" class="form-control" id="quotesB2" placeholder="">
+                <input name="quoteBL2" type="text" class="form-control" id="quoteB2" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="quoteBL3" type="text" class="form-control" id="quotesB3" placeholder="">
+                <input name="quoteBL3" type="text" class="form-control" id="quoteB3" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
-                <input name="quoteBL4" type="text" class="form-control" id="quotesB4" placeholder="">
+                <input name="quoteBL4" type="text" class="form-control" id="quoteB4" placeholder="">
             </div>
             <div class="col-lg-2-no-padding padding-left-2">
-                <input name="quoteBL5" type="text" class="form-control" id="quotesB5" placeholder="">
+                <input name="quoteBL5" type="text" class="form-control" id="quoteB5" placeholder="">
             </div>
         </div>
-        <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="quotesB">
+        <div class="fileinput fileinput-new input-group" data-provides="fileinput" id="quoteB">
             <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
             <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="quoteBLF"></span>
             <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>

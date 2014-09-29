@@ -1,4 +1,12 @@
 <?php
+
+include_once 'job_handler.php';
+
+//ob_start();
+//var_dump($f);
+//$result = ob_get_clean();
+//file_put_contents('test.lg', $f);
+
 class REST {
     private $method = '';
     private $args = Array();
@@ -20,7 +28,9 @@ class REST {
         $this->user = $_SERVER['PHP_AUTH_USER'];
         */
         // Get the request method
+
         $this->method = $_SERVER['REQUEST_METHOD'];
+
         if ($this->method == 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER)) {
             if ($_SERVER['HTTP_X_HTTP_METHOD'] == 'DELETE') {
                 $this->method = 'DELETE';
@@ -38,6 +48,7 @@ class REST {
         if ($uriparts === false || count($uriparts) < 2) {
             $this->fail("Invalid URI", 400);
         }
+
         // This now splits /arg1/arg2
         $args = explode('/', $uriparts[1]);
         array_shift($args);
@@ -47,82 +58,34 @@ class REST {
     public function processAPI() {
         switch ($this->method) {
             case "GET":
-                if (!isset($this->args[0])) { // TODO: cehck if args[0] is correct (I might be off by one)
-                    // TODO: dump a JSON containing all the items in ../queue that are NOT running/finished
+                if (!isset($this->args[0])) { // TODO: check if args[0] is correct (I might be off by one)
 
-                    $dir = '../api/queue';
-                    $new = '_NEW';
-                    $submitted = '_SUBMITTED';
-                    $commandFile = 'command';
-                    $JSON = null;
-                    $gotNewJob = false;
+                    $gotNew = false;
+                    // get older jobs first
+                    $allJobs = get_job_list();
+                    sort($allJobs);
 
-                    // Open a known directory, and proceed to read its contents
-                    if (is_dir($dir)) {
-                        if ($dh = opendir($dir)) {
-                            // for all files in folder
-                            while (($file = readdir($dh)) !== false) {
-                                $path = $dir.'/'.$file;
-                                // if this is a job folder
-                                if(is_dir($path) && strncmp($file, 'job_', 4) == 0) {
-                                    // check if the job is new
-                                    if(is_file($path.'/'.$new)){
-
-                                        // found job
-                                        $gotNewJob = true;
-
-                                        // read the command
-                                        $command = array();
-                                        $handle = fopen($path.'/'.$commandFile, "r");
-                                        if ($handle) {
-                                            while (($line = fgets($handle)) !== false) {
-                                                $line = str_replace(array("\n"), '', $line);
-                                                array_push($command, $line);
-                                            }
-
-                                        } else {
-                                            echo 'ERROR while reading command file';
-                                        }
-                                        fclose($handle);
-
-                                        // for all files as input
-                                        $txtFiles = array();
-                                        if($pathH = opendir($path)){
-                                            while (($txt = readdir($pathH)) !== false) {
-                                                $ext = pathinfo($txt, PATHINFO_EXTENSION);
-                                                if($ext == 'txt') {
-                                                    //echo $txt . '<br>';
-                                                    array_push($txtFiles, $txt);
-                                                }
-                                            }
-                                            closedir($pathH);
-                                        }
-                                        //exit;
-
-                                        // print JSON and exit
-                                        $JSON = array('newJob' => true, 'jobName' => $file ,'command' => $command, 'files' => $txtFiles);
-
-                                        // set this job status to submitted
-                                        //rename($path.'/'.$new, $path.'/'.$submitted);
-
-                                        // stop searching for jobs
-                                        break;
-                                    }
-                                }
-                            }
-                            closedir($dh);
+                    foreach($allJobs as $job){
+                        // found a new job
+                        if($job->is_new()){
+                            $JSON = array(
+                                'newJob' => true,
+                                'jobID' => $job->id ,
+                                'dependencies' => $job->get_dependency_files()
+                            );
+                            $gotNew = true;
+                            break;
                         }
                     }
-                    // if here then there is now new job
-                    if(!$gotNewJob){
+
+                    // if no new jobs
+                    if(!$gotNew){
                         $JSON = array('newJob' => false);
                     }
 
-
-                    // return JSON
+                    // send JSON
                     header('Content-type: text/javascript');
                     echo $this->json_readable_encode($JSON);
-                    //echo json_encode($JSON, JSON_PRETTY_PRINT);
 
                 } else {
                     if (!preg_match('/^[0-9]{8,10}$/i', $this->args[0])) { // TODO: fix the regex to match the queue_id format
@@ -130,28 +93,56 @@ class REST {
                     }
                     // TODO: dump a JSON containing all info about a single queue item
                 }
-
                 break;
             case "PUT":
                 if (!isset($this->args[0])) {
                     $this->fail("Invalid queue ID", 406);
                 }
-                if (!preg_match('/^[0-9]{8,10}$/i', $this->args[0])) { // TODO: fix the regex to match the queue_id format
-                    $this->fail("Invalid queue ID", 406);
-                }
 
-                // TODO: handle updating request status and progress
-
-                // TODO: some sample code for handling incoming json
+                // check type is json
                 if ($_SERVER['CONTENT_TYPE'] != "application/json") {
                     $this->fail("Unsupported content type. Expecting: application/json.", 500);
                 }
-                $indata = file_get_contents('php://input');
-                $injson = json_decode($indata, true);
-                if ($injson == null) {
+
+                // if job with this id does not exist, fail
+                $jobID = $this->args[0];
+                if(!job_exists($jobID)){
+                    $this->fail("Invalid queue ID, no such job", 406);
+                }
+                $job = new Job($jobID);
+
+                // parse incoming json
+                $json = file_get_contents('php://input');
+                $json = json_decode($json, true);
+                if ($json == null) {
                     $this->fail("Incorrectly formatted json input.", 500);
                 }
-                var_dump($indata);
+
+                // update job
+                if($json['action'] == 'update'){
+                    // status update
+                    if(isset($json['status'])) {
+                        if ($json['status'] == 'submitted') {
+                            $job->set_to_submitted();
+                        } elseif ($json['status'] == 'running') {
+                            $job->set_to_running();
+                        } elseif ($json['status'] == 'success') {
+                            $job->set_to_success();
+                        } elseif ($json['status'] == 'fail') {
+                            $job->set_to_fail();
+                        }
+                    }
+
+                    // tracking URL
+                    if(isset($json['tracking'])) {
+                        $job->set_hadoop_link($json['tracking']);
+                    }
+
+                    // progress
+                    if(isset($json['progress'])) {
+                        $job->update_progress($json['progress']);
+                    }
+                }
 
                 try { // TODO: this is just an example of exception handling and reponse returning
                     if ($error) {
