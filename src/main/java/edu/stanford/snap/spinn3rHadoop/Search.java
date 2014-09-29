@@ -87,8 +87,14 @@ public class Search extends Configured implements Tool {
 
 		/** Set Mapper and Reducer, use identity reducer*/
 		job.setMapperClass(Map.class);
-		job.setReducerClass(Reducer.class);
-		//job.setNumReduceTasks(0);
+		if(cmd.hasOption("reducers")){
+			int numReducers = Integer.valueOf(cmd.getOptionValue("reducers"));
+			job.setReducerClass(Reducer.class);
+			job.setNumReduceTasks(numReducers);
+		}
+		else{
+			job.setNumReduceTasks(0);
+		}
 
 		/** Set input and output formats */
 		job.setInputFormatClass(TextInputFormat.class);
@@ -126,14 +132,14 @@ public class Search extends Configured implements Tool {
 		Date searchEnd;
 
 		public Spinn3rInputFilter() throws FileNotFoundException, ParseException{
-			
+
 			/** Parse job limitation form command line */
 			searchStart = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("start"));
 			searchEnd = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("end"));
 			searchContent = Arrays.asList(cmd.getOptionValues("content"));
 		}
 
-		
+
 		/**
 		 * Accept method gets one file path and should return T/F whether to process it or not. 
 		 * */
@@ -146,14 +152,14 @@ public class Search extends Configured implements Tool {
 			Date d = null;
 			int fileLength = -1;
 
-			
+
 			/** Remove if the file contents does not match */
 			fileContent = path.getName().replaceAll("-.*", "").toUpperCase();
 			if(!searchContent.contains(fileContent)){
 				System.out.println(path.getName() + "\t\t NOT OK - WRONG CONTENT TYPE!");
 				return false;
 			}
-			
+
 			/** Check date constraints */
 			try {
 				/** Special case for daily files from the current month */
@@ -172,20 +178,20 @@ public class Search extends Configured implements Tool {
 				e.printStackTrace();
 				System.exit(-1);
 			}
-			
+
 			/** Calculate file start and end date */
 			fileStart = Calendar.getInstance();
 			fileStart.setTime(d);
 			fileEnd = Calendar.getInstance();
 			fileEnd.setTime(fileStart.getTime());
 			fileEnd.add(fileLength, 1);
-			
+
 			/** Check if we should process it or not, depending on date */
 			if( fileStart.getTime().before(searchEnd) && fileEnd.getTime().after(searchStart) ){
 				System.out.println(path.getName() + "\t" + "\t\t * OK *\t\t for search time: " + searchStart + "-" + searchEnd);
 				return true;
 			}
-			
+
 			System.out.println(path.getName() + "\t" + "\t\t *** NOT OK ***\t for search time: " + searchStart + "-" + searchEnd);
 			return false;
 		}

@@ -41,6 +41,15 @@ public class ParseCLI {
 				.hasArg()
 				.withDescription("Select the output folder.")
 				.create("output");
+		
+		/***
+		 * Number of reducers
+		 * */
+		Option reducers = OptionBuilder.withArgName("reducers")
+				//.isRequired()
+				.hasArg()
+				.withDescription("Set the number of reducers. Use 0 for no reducers.")
+				.create("reducers");
 
 		/***
 		 * Date limitations
@@ -213,6 +222,7 @@ public class ParseCLI {
 		options.addOption(removeNoQuotes);
 		options.addOption(caseInsensitive);
 		options.addOption(formatF5);
+		options.addOption(reducers);
 
 		try {
 			/** Parse */
@@ -280,6 +290,19 @@ public class ParseCLI {
 					}
 				}
 			}
+			
+			/** Check number of reducers */
+			if(cmd.hasOption("reducers")){
+				String num = cmd.getOptionValue("reducers");
+				try {	
+					Integer.valueOf(num);
+				} catch (Exception e) {
+					throw new ParseException("Number of reducers should be a number!");
+				}
+				if(Integer.valueOf(num) < 0){
+					throw new ParseException("Number of reducers should be a positive number!");
+				}
+			}
 
 		} catch (Exception e) {
 			System.out.println("ERROR: "+e.getLocalizedMessage());
@@ -345,22 +368,24 @@ public class ParseCLI {
 	
 	public static void printArguments(CommandLine in){
 		System.out.println("-output: " + in.getOptionValue("output"));
+		System.out.println("-reducers: " + (in.getOptionValues("reducers") !=null ? in.getOptionValue("reducers") : "null"));
+		System.out.println("-formatF5: " + in.hasOption("formatF5"));
 		System.out.println("-start: " + in.getOptionValue("start"));
 		System.out.println("-end: " + in.getOptionValue("end"));
-		System.out.println("-content: " + (in.getOptionValues("content") !=null ? Arrays.asList(in.getOptionValues("content")) : "null"));
-		System.out.println("-langWL: " + (in.getOptionValues("langWL") !=null ? Arrays.asList(in.getOptionValues("langWL")) : "null"));
-		System.out.println("-langBL: " + (in.getOptionValues("langBL") !=null ? Arrays.asList(in.getOptionValues("langBL")) : "null"));
-		System.out.println("-urlWL: " + (in.getOptionValues("urlWL") !=null ? Arrays.asList(in.getOptionValues("urlWL")) : "null"));
-		System.out.println("-urlBL: " + (in.getOptionValues("urlBL") !=null ? Arrays.asList(in.getOptionValues("urlBL")) : "null"));
-		System.out.println("-keywordWL: " + (in.getOptionValues("keywordWL") !=null ? Arrays.asList(in.getOptionValues("keywordWL")) : "null"));
-		System.out.println("-keywordBL: " + (in.getOptionValues("keywordBL") !=null ? Arrays.asList(in.getOptionValues("keywordBL")) : "null"));
-		System.out.println("-titleWL: " + (in.getOptionValues("titleWL") !=null ? Arrays.asList(in.getOptionValues("titleWL")) : "null"));
-		System.out.println("-titleBL: " + (in.getOptionValues("titleBL") !=null ? Arrays.asList(in.getOptionValues("titleBL")) : "null"));
-		System.out.println("-contentWL: " + (in.getOptionValues("contentWL") !=null ? Arrays.asList(in.getOptionValues("contentWL")) : "null"));
-		System.out.println("-contentBL: " + (in.getOptionValues("contentBL") !=null ? Arrays.asList(in.getOptionValues("contentBL")) : "null"));
-		System.out.println("-quoteWL: " + (in.getOptionValues("quoteWL") !=null ? Arrays.asList(in.getOptionValues("quoteWL")) : "null"));
-		System.out.println("-quoteBL: " + (in.getOptionValues("quoteBL") !=null ? Arrays.asList(in.getOptionValues("quoteBL")) : "null"));
-		System.out.println("-removeVersions: " + (in.getOptionValues("removeVersions") !=null ? Arrays.asList(in.getOptionValues("removeVersions")) : "null"));
+		System.out.println("-content: " + (in.hasOption("content") ? Arrays.asList(in.getOptionValues("content")) : "null"));
+		System.out.println("-langWL: " + (in.hasOption("langWL") ? Arrays.asList(in.getOptionValues("langWL")) : "null"));
+		System.out.println("-langBL: " + (in.hasOption("langBL") ? Arrays.asList(in.getOptionValues("langBL")) : "null"));
+		System.out.println("-urlWL: " + (in.hasOption("urlWL") ? Arrays.asList(in.getOptionValues("urlWL")) : "null"));
+		System.out.println("-urlBL: " + (in.hasOption("urlBL") ? Arrays.asList(in.getOptionValues("urlBL")) : "null"));
+		System.out.println("-keywordWL: " + (in.hasOption("keywordWL") ? Arrays.asList(in.getOptionValues("keywordWL")) : "null"));
+		System.out.println("-keywordBL: " + (in.hasOption("keywordBL") ? Arrays.asList(in.getOptionValues("keywordBL")) : "null"));
+		System.out.println("-titleWL: " + (in.hasOption("titleWL") ? Arrays.asList(in.getOptionValues("titleWL")) : "null"));
+		System.out.println("-titleBL: " + (in.hasOption("titleBL") ? Arrays.asList(in.getOptionValues("titleBL")) : "null"));
+		System.out.println("-contentWL: " + (in.hasOption("contentWL") ? Arrays.asList(in.getOptionValues("contentWL")) : "null"));
+		System.out.println("-contentBL: " + (in.hasOption("contentBL") ? Arrays.asList(in.getOptionValues("contentBL")) : "null"));
+		System.out.println("-quoteWL: " + (in.hasOption("quoteWL") ? Arrays.asList(in.getOptionValues("quoteWL")) : "null"));
+		System.out.println("-quoteBL: " + (in.hasOption("quoteBL") ? Arrays.asList(in.getOptionValues("quoteBL")) : "null"));
+		System.out.println("-removeVersions: " + (in.hasOption("removeVersions") ? Arrays.asList(in.getOptionValues("removeVersions")) : "null"));
 		System.out.println("-removeNoLanguage: " + in.hasOption("removeNoLanguage"));
 		System.out.println("-removeGarbled: " + in.hasOption("removeGarbled"));
 		System.out.println("-removeUnparsableURL: " + in.hasOption("removeUnparsableURL"));
@@ -368,13 +393,13 @@ public class ParseCLI {
 		System.out.println("-removeEmptyContent: " + in.hasOption("removeEmptyContent"));
 		System.out.println("-removeNoQuotes: " + in.hasOption("removeNoQuotes"));
 		System.out.println("-caseInsensitive: " + in.hasOption("caseInsensitive"));
-		System.out.println("-formatF5: " + in.hasOption("formatF5"));
 	}
 
 	public static void main(String [] args){
 		/**
 		 * Sample command line input with all arguments set:
 -output out
+-reducers 1
 -start 2010-12-13T23
 -end 2013-09-02T17
 -content WEB FB TW
