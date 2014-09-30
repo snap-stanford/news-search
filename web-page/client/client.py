@@ -108,56 +108,55 @@ def update_state(job_id, status=None, tracking=None, progress=None):
     print response
 
 
-    #while True:
+while True:
+    # load json
+    response = requests.get(URL, auth=(user, password))
+    json_ = response.json()
 
-# load json
-response = requests.get(URL, auth=(user, password))
-json_ = response.json()
+    # if there is a new job
+    if json_['newJob']:
 
-# if there is a new job
-if json_['newJob']:
+        # create folder
+        if os.path.exists(WORKING_DIRECTORY):
+            shutil.rmtree(WORKING_DIRECTORY)
+        os.mkdir(WORKING_DIRECTORY)
+        os.chdir(WORKING_DIRECTORY)
 
-    # create folder
-    if os.path.exists(WORKING_DIRECTORY):
+        # get and store id
+        jobID = json_['jobID']
+        write_to_file('jobID', jobID)
+
+        # get dependencies
+        for link in json_['dependencies'].values():
+            fname = ntpath.basename(link)
+            print fname
+            load_file(link, fname)
+
+        # set status to submitted
+        update_state(jobID, status='submitted')
+
+        # run the job
+        arguments = read_command()
+
+        # execute
+        outFile = 'hadoop-out.log'
+        p = subprocess.Popen(COMMAND + arguments + ' &> ' + outFile, shell=True)
+
+        # wait for URL
+        url = get_tracking_url(p, outFile)
+
+        update_state(jobID, tracking=url, status='running')
+
+        # report progress map
+        report_progress(p, outFile)
+
+        if get_exit_status(outFile):
+            update_state(jobID, status='success')
+        else:
+            update_state(jobID, status='fail')
+
+        # delete folder
+        os.chdir('..')
         shutil.rmtree(WORKING_DIRECTORY)
-    os.mkdir(WORKING_DIRECTORY)
-    os.chdir(WORKING_DIRECTORY)
 
-    # get and store id
-    jobID = json_['jobID']
-    write_to_file('jobID', jobID)
-
-    # get dependencies
-    for link in json_['dependencies'].values():
-        fname = ntpath.basename(link)
-        print fname
-        load_file(link, fname)
-
-    # set status to submitted
-    update_state(jobID, status='submitted')
-
-    # run the job
-    arguments = read_command()
-
-    # execute
-    outFile = 'hadoop-out.log'
-    p = subprocess.Popen(COMMAND + arguments + ' &> ' + outFile, shell=True)
-
-    # wait for URL
-    #url = get_tracking_url(p, outFile)
-
-    #update_state(jobID, tracking=url, status='running')
-
-    # report progress map
-    #report_progress(p, outFile)
-
-    #if get_exit_status(outFile):
-    #    update_state(jobID, status='success')
-    #else:
-    #    update_state(jobID, status='fail')
-
-    # delete folder
-    #os.chdir('..')
-    #shutil.rmtree(WORKING_DIRECTORY)
-
-    #time.sleep(15)
+        time.sleep(15)

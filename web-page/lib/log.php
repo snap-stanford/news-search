@@ -37,7 +37,7 @@ class Log {
    * @param $message Sporocilo (Povezava z MS SQL ni uspela)
    */
   function error($message) {
-    file_put_contents($this->error_log, $this->getTimestamp() . " ERROR: $message\n", FILE_APPEND);
+    file_put_contents($this->error_log, $this->getTimestamp() . " [ERROR]: $message\n", FILE_APPEND);
   }
   
   /**
@@ -45,8 +45,8 @@ class Log {
    *
    * @param $message Sporocilo (Uspesno povezan z MS SQL)
    */
-  function activity($message) {
-    file_put_contents($this->activity_log, $this->getTimestamp() . " OK: $message\n", FILE_APPEND);
+  function info($message) {
+    file_put_contents($this->activity_log, $this->getTimestamp() . " [INFO]: $message\n", FILE_APPEND);
   }
 }
 ?>

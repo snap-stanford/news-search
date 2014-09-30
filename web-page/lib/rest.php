@@ -10,25 +10,9 @@ include_once 'job_handler.php';
 class REST {
     private $method = '';
     private $args = Array();
-    private $user = ''; // TODO: remove
 
     public function __construct() {
-        // Check authentication
-        // Note that we rely on the web server to do the password checking
-        /* TODO: delete
-        
-        if (!isset($_SERVER['PHP_AUTH_USER'])) {
-            header('WWW-Authenticate: Basic realm="studentupn"');
-            $this->fail('You are not authorized.', 401);
-        }
-        if (array_search($_SERVER['PHP_AUTH_USER'], $GLOBALS['users']) === false) {
-            header('WWW-Authenticate: Basic realm="studentupn"');
-            $this->fail('You are not authorized.', 401);
-        }
-        $this->user = $_SERVER['PHP_AUTH_USER'];
-        */
         // Get the request method
-
         $this->method = $_SERVER['REQUEST_METHOD'];
 
         if ($this->method == 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER)) {
@@ -42,7 +26,7 @@ class REST {
         }
 
         // Get the parameters
-        // We are expecting something like /some/path/queue.php/arg1
+        // We are expecting something like /some/path/queue.php/job_id
         $fname = basename($_SERVER['SCRIPT_NAME']);
         $uriparts = explode($fname, $_SERVER['REQUEST_URI']);
         if ($uriparts === false || count($uriparts) < 2) {
@@ -53,60 +37,63 @@ class REST {
         $args = explode('/', $uriparts[1]);
         array_shift($args);
         $this->args = $args;
+
+        // log
+        $GLOBALS['log']->info('Incoming REST call for method '.$this->method.' with arguments: '.implode($args));
     } //function __construct
 
     public function processAPI() {
         switch ($this->method) {
             case "GET":
-                if (!isset($this->args[0])) { // TODO: check if args[0] is correct (I might be off by one)
+                $gotNew = false;
+                // get older jobs first
+                $allJobs = get_job_list();
+                sort($allJobs);
 
-                    $gotNew = false;
-                    // get older jobs first
-                    $allJobs = get_job_list();
-                    sort($allJobs);
+                foreach($allJobs as $job){
+                    // found a new job
+                    if($job->is_new()){
+                        $JSON = array(
+                            'newJob' => true,
+                            'jobID' => $job->id ,
+                            'dependencies' => $job->get_dependency_files()
+                        );
+                        $gotNew = true;
 
-                    foreach($allJobs as $job){
-                        // found a new job
-                        if($job->is_new()){
-                            $JSON = array(
-                                'newJob' => true,
-                                'jobID' => $job->id ,
-                                'dependencies' => $job->get_dependency_files()
-                            );
-                            $gotNew = true;
-                            break;
-                        }
+                        // log
+                        $GLOBALS['log']->info('Found new job with ID: '.$job->id);
+                        break;
                     }
-
-                    // if no new jobs
-                    if(!$gotNew){
-                        $JSON = array('newJob' => false);
-                    }
-
-                    // send JSON
-                    header('Content-type: text/javascript');
-                    echo $this->json_readable_encode($JSON);
-
-                } else {
-                    if (!preg_match('/^[0-9]{8,10}$/i', $this->args[0])) { // TODO: fix the regex to match the queue_id format
-                        $this->fail("Invalid queue ID", 406);
-                    }
-                    // TODO: dump a JSON containing all info about a single queue item
                 }
+
+                // if no new jobs
+                if(!$gotNew){
+                    $JSON = array('newJob' => false);
+
+                    // log
+                    $GLOBALS['log']->info('No new job found!');
+                }
+
+                // send JSON
+                $this->response($JSON);
+
                 break;
             case "PUT":
                 if (!isset($this->args[0])) {
+                    $GLOBALS['log']->info('Queue ID not set!');
                     $this->fail("Invalid queue ID", 406);
                 }
 
                 // check type is json
                 if ($_SERVER['CONTENT_TYPE'] != "application/json") {
+                    $GLOBALS['log']->info('Unsupported content type: '.$_SERVER['CONTENT_TYPE']);
                     $this->fail("Unsupported content type. Expecting: application/json.", 500);
                 }
 
                 // if job with this id does not exist, fail
                 $jobID = $this->args[0];
                 if(!job_exists($jobID)){
+                    $GLOBALS['log']->info('No job with ID ' . $jobID);
                     $this->fail("Invalid queue ID, no such job", 406);
                 }
                 $job = new Job($jobID);
@@ -115,6 +102,7 @@ class REST {
                 $json = file_get_contents('php://input');
                 $json = json_decode($json, true);
                 if ($json == null) {
+                    $GLOBALS['log']->info('Incorrectly formatted json input.');
                     $this->fail("Incorrectly formatted json input.", 500);
                 }
 
@@ -124,39 +112,35 @@ class REST {
                     if(isset($json['status'])) {
                         if ($json['status'] == 'submitted') {
                             $job->set_to_submitted();
+                            $GLOBALS['log']->info('Job '.$jobID. ' status set to SUBMITTED.');
                         } elseif ($json['status'] == 'running') {
                             $job->set_to_running();
+                            $GLOBALS['log']->info('Job '.$jobID. ' status set to RUNNING.');
                         } elseif ($json['status'] == 'success') {
                             $job->set_to_success();
+                            $GLOBALS['log']->info('Job '.$jobID. ' status set to SUCCESS.');
                         } elseif ($json['status'] == 'fail') {
                             $job->set_to_fail();
+                            $GLOBALS['log']->info('Job '.$jobID. ' status set to FAIL.');
                         }
                     }
 
                     // tracking URL
                     if(isset($json['tracking'])) {
                         $job->set_hadoop_link($json['tracking']);
+                        $GLOBALS['log']->info('Job '.$jobID. ' updating tracking link.');
                     }
 
                     // progress
                     if(isset($json['progress'])) {
                         $job->update_progress($json['progress']);
+                        $GLOBALS['log']->info('Job '.$jobID. ' updating progress.');
                     }
-                }
-
-                try { // TODO: this is just an example of exception handling and reponse returning
-                    if ($error) {
-                        $this->fail("Some error.", 404);
-                    } else {
-                        // TODO: you can pass an associative array (dictionary) to the response function and it will automatically JSON encode it
-                        $this->response("Oh great all is good", 200);
-                    }
-                } catch (Exception $e) {
-                    $this->fail($e->getMessage(), 500);
                 }
 
                 break;
             default:
+                $GLOBALS['log']->info('Method not allowed!.');
                 $this->fail("Method not allowed.", 405);
         }
     } //function processAPI
@@ -173,7 +157,8 @@ class REST {
         header("Access-Control-Allow-Methods: *");
         header("Content-Type: application/json; charset=utf-8");
 
-        echo json_encode($data);
+        //echo json_encode($data);
+        echo $this->json_readable_encode($data);
         exit(0);
     } //function response
 
@@ -227,6 +212,8 @@ class REST {
             return $status[500];
         }
     } // function requestStatus
+
+    // following function is used, since the version of PHP on the server does not support pretty print
 
     /*
         json readable encode

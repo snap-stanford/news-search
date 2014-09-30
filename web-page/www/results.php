@@ -1,16 +1,18 @@
 <?php
-include_once '../lib/header.html';
-include_once '../lib/job_handler.php';
 
 // Report all PHP errors (see changelog)
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
+//error_reporting(E_ALL);
+//ini_set('display_errors', '1');
+
+// includes
+include_once '../lib/header.html';
+include_once '../lib/job_handler.php';
 
 /**
  * Global variables and settings
  */
 date_default_timezone_set('America/Los_Angeles');
-$REFRESH_RATE = 3;
+$REFRESH_RATE = 60;
 $PAGE = 1;
 
 // pagination settings
@@ -20,6 +22,7 @@ if(isset($_GET['page'])){
     $PAGE = $_GET['page'];
 }
 
+// auto refresh
 header("refresh:".$REFRESH_RATE );
 
 ?>
@@ -44,12 +47,18 @@ header("refresh:".$REFRESH_RATE );
         <?php
         // fill results from files
         $allJobs = get_job_list();
+
+        // if page > last page set it to last page
         $numPages = ceil(sizeof($allJobs)/$PER_PAGE);
         if($PAGE > $numPages){
             $PAGE = $numPages;
         }
+
+        // get the slice for this page
         $jobs = array_slice($allJobs,($PAGE-1)*$PER_PAGE,$PER_PAGE);
 
+
+        // for each job
         foreach($jobs as $job){
             $class = '';
             $status = '';
@@ -73,18 +82,21 @@ header("refresh:".$REFRESH_RATE );
                 $class = 'danger';
                 $status = 'FAILED';
             }
+
+            // get date and hour
             $date = $job->get_start_date();
 
             echo "<tr class='$class' class='text-center'>\n";
-
             echo "<td class='text-center table-cell-center'>".$date[0]."</td>\n";
             echo "<td class='text-center table-cell-center'>".$date[1]."</td>\n";
             if($job->is_running()){
                 $stat = $job->get_progress();
                 echo "<td class='text-center table-cell-center'>\n";
+                // map progress
                 echo "<div class='progress progress-striped active center-block' style='margin-bottom: 2px; width: 200px'>\n";
                 echo "<div class='progress-bar' style='width: ".$stat[0]."'></div>\n";
                 echo "</div>\n";
+                // reduce progress
                 echo "<div class='progress progress-striped active center-block' style='margin-bottom: 0px; width: 200px'>\n";
                 echo "<div class='progress-bar' style='width: ".$stat[1]."'></div>\n";
                 echo "</div>\n";
@@ -92,7 +104,7 @@ header("refresh:".$REFRESH_RATE );
             }else{
                 echo "<td class='text-center table-cell-center'>$status</td>\n";
             }
-            if(!$job->is_new() && !$job->is_submitted()){
+            if($job->is_running() || $job->is_success() || $job->is_fail()){
                 echo "<td class='text-center table-cell-center'><a target='_blank' href='".$job->get_hadoop_link()."'>link</a></td>\n";
                 echo "<td class='text-center table-cell-center'><a target='_blank' href='".$job->get_results_link()."'>link</a></td>\n";
             }

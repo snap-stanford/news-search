@@ -1,17 +1,18 @@
 <?php
 // http://php.net/manual/en/ref.dir.php
-
-// Report all PHP errors (see changelog)
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-include_once '../lib/job_handler.php';
-
 //echo "<pre>";
 //var_dump($PROBLEMS);
 //var_dump($NOTIFICATION);
 //var_dump($_POST);
 //var_dump($_FILES);
 //echo "</pre>";
+
+// Report all PHP errors (see changelog)
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
+// includes
+include_once '../lib/job_handler.php';
 
 /**
  * Global variables and settings
@@ -141,7 +142,6 @@ function errmsg($msg) {
     $PROBLEMS = true;
     $NOTIFICATION = '';
     $NOTIFICATION .= "<div class='alert alert-dismissable alert-danger'>\n";
-    //$NOTIFICATION .= "<button type='button' class='close' data-dismiss='alert'>×</button>\n";
     $NOTIFICATION .= "<h2 class='text-danger space-after-title'>Error while submitting a job!</h2>\n";
     $NOTIFICATION .= "<p>There was an error while submitting your job.</p>\n";
     $NOTIFICATION .= "<p>The error message is: <b>$msg</b></p>\n";
@@ -155,7 +155,6 @@ function sccmsg() {
 
     $NOTIFICATION = '';
     $NOTIFICATION .= "<div class='alert alert-dismissable alert-success'>\n";
-    //$NOTIFICATION .= "<button type='button' class='close' data-dismiss='alert'>×</button>\n";
     $NOTIFICATION .= "<h2 class='text-success space-after-title'>Your job was successfully submitted!</h2>\n";
     $NOTIFICATION .= "<p>You will be redirected to results page in 5 seconds.</p>\n";
     $NOTIFICATION .= "</div>\n";

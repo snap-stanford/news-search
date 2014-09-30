@@ -9,6 +9,17 @@
 $QUEUE_PATH = '../api/queue/';
 $PUBLIC_FILES_LINK = 'http://snap.stanford.edu/news-search/api/queue/';
 
+/**
+ * Set logging
+ */
+define("LIB_PATH1", dirname(__FILE__)."/../lib/");
+define("LOG_PATH1", dirname(__FILE__)."/../log/");
+require_once(LIB_PATH1."log.php");
+date_default_timezone_set('America/Los_Angeles');
+$log = new Log(LOG_PATH1 . date('Y-m-d') . '-' . basename(__FILE__));
+$GLOBALS['log'] = $log;
+
+
 class Job{
     public $id;
     private $path;
@@ -39,8 +50,7 @@ class Job{
         if ($handle) {
             fwrite($handle, $url."\n");
         } else {
-            //TODO report fail
-            echo 'ERROR while ...';
+            $GLOBALS['log']->error('Can not open file for hadoop tracking link! JobID: '.$this->id);
         }
         fclose($handle);
     }
@@ -52,8 +62,7 @@ class Job{
                 $url = str_replace(array("\n"), '', $line);
             }
         } else {
-            //TODO report fail
-            echo 'ERROR while ...';
+            $GLOBALS['log']->error('Can not open file for hadoop tracking link! JobID: '.$this->id);
         }
         fclose($handle);
         return $url;
@@ -68,8 +77,7 @@ class Job{
         if ($handle) {
             fwrite($handle, $date."\n");
         } else {
-            //TODO report fail
-            echo 'ERROR while ...';
+            $GLOBALS['log']->error('Can not open file for date! JobID: '.$this->id);
         }
         fclose($handle);
     }
@@ -82,8 +90,7 @@ class Job{
                 $date = explode(' ', $line);
             }
         } else {
-            //TODO report fail
-            echo 'ERROR while ...';
+            $GLOBALS['log']->error('Can not open file for date! JobID: '.$this->id);
         }
         fclose($handle);
         return $date;
@@ -98,8 +105,7 @@ class Job{
                     $progress = explode(' ', str_replace(array("\n"), '', $line));
                 }
             } else {
-                //TODO report fail
-                echo 'ERROR while ...';
+                $GLOBALS['log']->error('Can not open file _RUNNING! JobID: '.$this->id);
             }
             fclose($handle);
         }
@@ -110,18 +116,17 @@ class Job{
         if($this->is_running()){
             file_put_contents($this->path.'_RUNNING', $prg);
         }else{
-            //TODO report error
-            echo "ERROR 1";
+            $GLOBALS['log']->error('Can not open file _RUNNING for updating progress! JobID: '.$this->id);
         }
     }
 
     // status setters
     public function set_to_submitted(){
         $this->set_to_state('_SUBMITTED');
-        $this->update_progress('0% 0%');
     }
     public function set_to_running(){
         $this->set_to_state('_RUNNING');
+        $this->update_progress('0% 0%');
     }
     public function set_to_success(){
         $this->set_to_state('_SUCCESS');
@@ -162,8 +167,7 @@ class Job{
         $f = $f[0];
         if (rename($f, $this->path.$state)) {
         } else {
-            //TODO report error
-            echo "ERROR 2";
+            $GLOBALS['log']->error('Can not rename status file to state '.$state.'! JobID: '.$this->id);
         }
     }
 }
@@ -183,7 +187,7 @@ function get_job_list(){
             }
         }
     }else{
-        //TODO report
+        $GLOBALS['log']->error('Can not QUEUE folder!');
     }
     rsort($all_jobs);
     return $all_jobs;
