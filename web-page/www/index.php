@@ -475,6 +475,20 @@ include_once "../lib/header.html";
 </div>
 <!-- Remove versions -->
 
+<!-- Select number of reducers -->
+<legend>Number of reducers</legend>
+<div class="form-group">
+    <label class="col-lg-2 control-label"></label>
+    <div class="col-lg-10">
+        <div class="">
+            <div class="col-lg-2-no-padding padding-right-2">
+                <input class="form-control text-center" type="number" name="reducers" min="0" max="600" value="40">
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Select number of reducers -->
+
 <!-- Other -->
 <legend>Other</legend>
 <div class="form-group">

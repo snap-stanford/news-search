@@ -26,6 +26,7 @@ date_default_timezone_set('America/Los_Angeles');
 // Logiranje
 $log = new Log(LOG_PATH . date('Y-m-d') . basename(__FILE__));
 $GLOBALS['log'] = $log;
+$GLOBALS['log']->activity('sldfkldsjljkfds');
 
 // Allowed users
 //TODO: delete this

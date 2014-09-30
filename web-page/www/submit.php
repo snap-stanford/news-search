@@ -6,6 +6,13 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 include_once '../lib/job_handler.php';
 
+//echo "<pre>";
+//var_dump($PROBLEMS);
+//var_dump($NOTIFICATION);
+//var_dump($_POST);
+//var_dump($_FILES);
+//echo "</pre>";
+
 /**
  * Global variables and settings
  */
@@ -81,6 +88,11 @@ function write_command($path, $jobID){
     }
     if(!$empty){
         fwrite($file, "\n");
+    }
+
+    // number of reducers
+    if(isset($_POST['reducers'])){
+        fwrite($file, '-reducers '.$_POST['reducers']."\n");
     }
 
     // boolean options
@@ -191,13 +203,6 @@ if (isset($_POST['search'])) {
     else{
         rrmdir($jobPath);
     }
-
-    //echo "<pre>";
-    //var_dump($PROBLEMS);
-    //var_dump($NOTIFICATION);
-    //var_dump($_POST);
-    //var_dump($_FILES);
-    //echo "</pre>";
 }
 
 include_once "../lib/header.html";
