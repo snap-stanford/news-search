@@ -12,7 +12,7 @@ include_once '../lib/job_handler.php';
  * Global variables and settings
  */
 date_default_timezone_set('America/Los_Angeles');
-$REFRESH_RATE = 60;
+$REFRESH_RATE = 10;
 $PAGE = 1;
 
 // pagination settings

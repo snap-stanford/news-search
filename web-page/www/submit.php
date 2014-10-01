@@ -55,7 +55,7 @@ function write_command($path, $jobID){
     foreach ($fields as $f1){
         foreach(array('WL', 'BL') as $lst){
             $field = $f1.$lst;
-            if($_FILES[$field.'F']['error'] != UPLOAD_ERR_NO_FILE){
+            if(isset($_FILES[$field.'F']) && $_FILES[$field.'F']['error'] != UPLOAD_ERR_NO_FILE){
                 fwrite($file, '-'.$field.' '.$field.'F.txt'."\n");
             }else{
                 $empty = true;
@@ -116,7 +116,7 @@ function copy_uploaded_files($path){
         'titleWLF', 'titleBLF', 'contentWLF', 'contentBLF', 'quoteWLF', 'quoteBLF');
     foreach($possibleFiles as $file){
         // if present
-        if($_FILES[$file]['error'] != UPLOAD_ERR_NO_FILE) {
+        if(isset($_FILES[$file]) && $_FILES[$file]['error'] != UPLOAD_ERR_NO_FILE) {
             //check size limits
             if ($_FILES[$file]['size'] > $FILE_SIZE_LIMIT ||
                 $_FILES[$file]['error'] == UPLOAD_ERR_FORM_SIZE ||
