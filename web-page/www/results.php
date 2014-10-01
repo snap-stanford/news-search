@@ -40,6 +40,7 @@ header("refresh:".$REFRESH_RATE );
             <th class="text-center">Progress</th>
             <th class="text-center">Hadoop tracking</th>
             <th class="text-center">Result files</th>
+            <th class="text-center">Hadoop out</th>
         </tr>
         </thead>
         <tbody>
@@ -112,6 +113,13 @@ header("refresh:".$REFRESH_RATE );
                 echo "<td class='text-center table-cell-center'></td>\n";
                 echo "<td class='text-center table-cell-center'></td>\n";
             }
+            if($job->get_hadoop_out_link() != false){
+                echo "<td class='text-center table-cell-center'><a target='_blank' href='".$job->get_hadoop_out_link()."'>link</a></td>\n";
+            }
+            else{
+                echo "<td class='text-center table-cell-center'></td>\n";
+            }
+
             echo "</tr>";
         }
         ?>

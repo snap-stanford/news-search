@@ -94,6 +94,18 @@ def get_pid():
         logging.error("PID file is missing!")
 
 
+def get_haddop_out():
+    """
+        Read the pid from file.
+    :return: pid
+    """
+    if os.path.isfile(HADOOP_OUT):
+        return ''.join(open(HADOOP_OUT).readlines())
+    else:
+        logging.error("Hadoop out file is missing!")
+        return ''
+
+
 def check_pid(pid):
     """ Check For the existence of a unix pid. """
     try:
@@ -161,7 +173,7 @@ def get_exit_status(ofile):
     return succ
 
 
-def update_state(job_id, status=None, tracking=None, progress=None):
+def update_state(job_id, status=None, tracking=None, progress=None, hadoop_out=None):
     """
         Update the state of the currently running job back to the REST api.
     :param job_id:  id of the job
@@ -181,17 +193,22 @@ def update_state(job_id, status=None, tracking=None, progress=None):
             data['tracking'] = tracking
         if progress:
             data['progress'] = progress
+        if hadoop_out:
+            data['hadoop_out'] = hadoop_out
 
         # encode to JSON
-        data = json.dumps(data)
-        logging.warn('Sending out data:' + data)
+        dataJson = json.dumps(data)
 
         # set headers and send
         headers = {'Content-type': 'application/json',}
                    #'X-HTTP-Method': 'PUT'}
-        r = requests.put(url_, data=data, headers=headers, auth=(user, password))
+        r = requests.put(url_, data=dataJson, headers=headers, auth=(user, password))
         if r.status_code != 200:
             logging.error("Got response with status code %s while updating status!" % r.status_code)
+        else:
+            if hadoop_out:
+                data['hadoop_out'] = '--- truncated for brevity ---'
+            logging.warn('Sent out data:' + json.dumps(data))
     except Exception as e:
         logging.error("Error while updating status! Message: " + e.message)
 
@@ -263,6 +280,10 @@ elif os.path.isfile(WORKING_DIRECTORY+'/'+PID):
         # just to be sure, wait till it is not gone
         while check_pid(pid):
             time.sleep(1)
+
+        # send hadoop out
+        ho = get_haddop_out()
+        update_state(jobID, hadoop_out=ho)
 
         # delete folder
         os.chdir('..')

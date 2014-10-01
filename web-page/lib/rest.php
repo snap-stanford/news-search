@@ -136,6 +136,12 @@ class REST {
                         $job->update_progress($json['progress']);
                         $GLOBALS['log']->info('Job '.$jobID. ' updating progress.');
                     }
+
+                    // hadoop out
+                    if(isset($json['hadoop_out'])) {
+                        $job->store_hadoop_out($json['hadoop_out']);
+                        $GLOBALS['log']->info('Job '.$jobID. ' storing hadoop out.');
+                    }
                 }
 
                 break;

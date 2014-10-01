@@ -45,8 +45,28 @@ class Job{
         return $present;
     }
 
+    public function get_hadoop_out_link(){
+        global $PUBLIC_FILES_LINK;
+
+        if(file_exists($this->path.'hadoop-output.log')){
+            return $PUBLIC_FILES_LINK.$this->id.'/hadoop-output.log';
+        }
+        else{
+            $GLOBALS['log']->error('Can not find file for hadoop output log! JobID: '.$this->id);
+            return false;
+        }
+    }
+    public function store_hadoop_out($content){
+        $handle = fopen($this->path.'/hadoop-output.log', "w");
+        if ($handle) {
+            fwrite($handle, $content);
+        } else {
+            $GLOBALS['log']->error('Can not open file for hadoop output log! JobID: '.$this->id);
+        }
+        fclose($handle);
+    }
     public function set_hadoop_link($url){
-        $handle = fopen($this->path.'/hadoop-track', "w");
+        $handle = fopen($this->path.'/hadoop-track-url.log', "w");
         if ($handle) {
             fwrite($handle, $url."\n");
         } else {
@@ -56,7 +76,7 @@ class Job{
     }
     public function get_hadoop_link(){
         $url = '';
-        $handle = fopen($this->path.'/hadoop-track', "r");
+        $handle = fopen($this->path.'/hadoop-track-url.log', "r");
         if ($handle) {
             while (($line = fgets($handle)) !== false) {
                 $url = str_replace(array("\n"), '', $line);
