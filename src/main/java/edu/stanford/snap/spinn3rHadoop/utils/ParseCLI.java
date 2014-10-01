@@ -279,14 +279,14 @@ public class ParseCLI {
 			if(cmd.hasOption("langWL")){
 				for(String l : cmd.getOptionValues("langWL")){
 					if(!ALLOWED_LANGUAGESE.contains(l)){
-						throw new ParseException("Invalid lenguage: " + l);
+						throw new ParseException("Invalid language: " + l);
 					}
 				}
 			}
 			if(cmd.hasOption("langBL")){
 				for(String l : cmd.getOptionValues("langBL")){
 					if(!ALLOWED_LANGUAGESE.contains(l)){
-						throw new ParseException("Invalid lenguage: " + l);
+						throw new ParseException("Invalid language: " + l);
 					}
 				}
 			}
