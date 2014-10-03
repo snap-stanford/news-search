@@ -93,7 +93,8 @@ public class Search extends Configured implements Tool {
 			job.setNumReduceTasks(numReducers);
 		}
 		else{
-			job.setNumReduceTasks(0);
+			job.setNumReduceTasks(1);
+			job.setReducerClass(Reducer.class);
 		}
 
 		/** Set input and output formats */

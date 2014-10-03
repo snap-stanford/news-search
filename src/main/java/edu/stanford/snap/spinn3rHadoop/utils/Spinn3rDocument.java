@@ -146,8 +146,16 @@ public class Spinn3rDocument {
 	 * Construct the Spinn3rDocument object from multi-line string.
 	 * Used for parsing the documents stored in hadoop.
 	 * */
-	public Spinn3rDocument (String doc){
-		for(String line : doc.split("\n")){
+	public Spinn3rDocument (String doc){		
+		// we use String.indefOf() since it is faster than String.split() method
+		// append one final newline since the code below needs it
+		doc = doc + '\n';
+		int pos = 0, end;
+        while ((end = doc.indexOf('\n', pos)) >= 0) {
+            String line = doc.substring(pos, end);
+            pos = end + 1;
+            // end splitting by newline
+            
 			char type = line.charAt(0);
 			String value = line.substring(2);
 
