@@ -5,7 +5,21 @@ include_once "../lib/header.html";
 <div class="control-label">
     <h1 class="space-after-title">New search</h1>
     <legend>Instructions</legend>
-    <h4 class="text-warning col-lg-offset-2">Use the search wisely! Running the search occupies a lot of resources.</h4>
+    <div class="col-lg-offset-2">
+        The search is based on the white and black list concept. Documents can be filtered by many different fields.
+        When using white or black lists, the document must match with some pattern of the white list and can not
+        match with any pattern of the black list for it to be propagated to results. You can think of this, as there is
+        an 'or' between the white list's patterns. If you wish to use 'and', put the patters in the same field and separate
+        them with double and (&&). For example 'black && white' will search for documents containing both words, 'black'
+        and 'white'.
+        <br>
+        <br>
+        The form can accept up to 5 patterns for each of the lists. When you wish to use more, use files.
+        In a file, each pattern should be in its own line.
+    </div>
+    <h3 class="text-warning col-lg-offset-2 text-center">
+        Please, use the search wisely, since it occupies a lot of resources!
+    </h3>
 
 </div>
 
@@ -15,11 +29,21 @@ include_once "../lib/header.html";
 <!-- Date -->
 <legend>Select date</legend>
 <div class="form-group">
+    <label class="col-lg-2 control-label"></label>
+    <div class="col-lg-10">
+        We collect data from 1st of August 2008 onwards. Specify the start and end date in format <b>YYYY-MM-DDTHH</b>,
+        where YYYY is year, MM is month (1-12), DD is day in month (1-31) and finally HH is hour of the day (0-23).
+        Be sure tu put the separating 'T' between DD and HH.
+    </div>
+</div>
+
+<div class="form-group">
     <label  class="col-lg-2 control-label">Start</label>
     <div class="col-lg-10">
         <input name="start" type="text" class="form-control" placeholder="eg. 2008-08-01T01">
     </div>
 </div>
+
 <div class="form-group">
     <label for="inputPassword" class="col-lg-2 control-label">End</label>
     <div class="col-lg-10">
@@ -55,6 +79,15 @@ include_once "../lib/header.html";
 
 <!-- Language -->
 <legend>Select language</legend>
+<div class="form-group">
+    <label class="col-lg-2 control-label"></label>
+    <div class="col-lg-10">
+        Each document can have several languages detected and we store probabilities for each of them.
+        Document's <b>probable language</b> is defined as the language whose probability is >= 0.8.
+        White and black lists work only on documents with a probable language.
+    </div>
+</div>
+
 <div class="form-group">
     <label class="col-lg-2 control-label">White list</label>
     <div class="col-lg-10">
@@ -111,7 +144,7 @@ include_once "../lib/header.html";
 
         <div class="checkbox col-lg-10">
             <label>
-                <input name="removeNoLanguage" type="checkbox" checked> Remove records without probable language
+                <input name="removeNoLanguage" type="checkbox" checked> Remove documents without a probable language
             </label>
         </div>
     </div>
@@ -120,7 +153,15 @@ include_once "../lib/header.html";
 <!-- Language -->
 
 <!-- URLs -->
-<legend>Filter by URL pattern</legend>
+<legend>Filter by domain name</legend>
+<div class="form-group">
+    <label class="col-lg-2 control-label"></label>
+    <div class="col-lg-10">
+        Documents have associated the source URL. Some, however, have invalid URLs
+        and consequently the source domain name is unknown.
+    </div>
+</div>
+
 <div class="form-group">
     <label class="col-lg-2 control-label">White list</label>
     <div class="col-lg-10">
@@ -177,7 +218,7 @@ include_once "../lib/header.html";
 
         <div class="checkbox col-lg-10">
             <label>
-                <input name="removeUnparsableURL" type="checkbox" checked> Remove records with unparsable URL
+                <input name="removeUnparsableURL" type="checkbox" checked> Remove documents without a source domain name
             </label>
         </div>
     </div>
@@ -186,6 +227,12 @@ include_once "../lib/header.html";
 
 <!-- Keywords -->
 <legend>Filter by keywords</legend>
+<div class="form-group">
+    <label class="col-lg-2 control-label"></label>
+    <div class="col-lg-10">
+        Keywords are sought for in the document's title and content.
+    </div>
+</div>
 
 <div class="form-group">
     <label class="col-lg-2 control-label">White list</label>
@@ -302,7 +349,7 @@ include_once "../lib/header.html";
 
         <div class="checkbox col-lg-10">
             <label>
-                <input name="removeEmptyTitle" type="checkbox" checked> Remove records without title
+                <input name="removeEmptyTitle" type="checkbox" checked> Remove documents without a title
             </label>
         </div>
     </div>
@@ -367,7 +414,7 @@ include_once "../lib/header.html";
 
         <div class="checkbox col-lg-10">
             <label>
-                <input name="removeEmptyContent" type="checkbox" checked> Remove records without content
+                <input name="removeEmptyContent" type="checkbox" checked> Remove documents without a content
             </label>
         </div>
     </div>
@@ -433,7 +480,7 @@ include_once "../lib/header.html";
 
         <div class="checkbox col-lg-10">
             <label>
-                <input name="removeNoQuotes" type="checkbox"> Remove records without quotes
+                <input name="removeNoQuotes" type="checkbox"> Remove documents without quotes
             </label>
         </div>
     </div>
@@ -480,6 +527,18 @@ include_once "../lib/header.html";
 <div class="form-group">
     <label class="col-lg-2 control-label"></label>
     <div class="col-lg-10">
+        The number of reducers corresponds to the number of output files.
+        Search will finish much faster if we do not use any reducers and the number of output files corresponds to the
+        number of mappers. However, the number of output files can be enormous when the date range is large. To run the search without any reducers set the number of reducers to 0.
+        <br><br>
+        When the large number of files is not acceptable, use reducers. Then the time required is dependant on the number of documents found. Note that, if we find
+        many documents and we use a small number of reducers (especially 1), the search will run very slow!
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="col-lg-2 control-label"></label>
+    <div class="col-lg-10">
         <div class="">
             <div class="col-lg-2-no-padding padding-right-2">
                 <input class="form-control text-center" type="number" name="reducers" min="0" max="600" value="40">
@@ -492,11 +551,21 @@ include_once "../lib/header.html";
 <!-- Other -->
 <legend>Other</legend>
 <div class="form-group">
+    <label class="col-lg-2 control-label"></label>
+    <div class="col-lg-10">
+        In some of the earlier version of the client, data was stored as ASCII or Latin1. Consequently, all some of the
+        characters were not able to be stored properly (they are stored as '?' etc.) and were permanently lost.
+        We say, that the documents is <b>grabled</b> if the fraction of useful (i.e. properly stored) characters
+        in the document is below 0.8.
+    </div>
+</div>
+
+<div class="form-group">
     <div class="col-lg-10 margin-left-content">
 
         <div class="checkbox">
             <label>
-                <input name="removeGarbled" type="checkbox" checked> Remove garbled text
+                <input name="removeGarbled" type="checkbox" checked> Remove garbled documents
             </label>
         </div>
         <div class="checkbox">
@@ -506,7 +575,7 @@ include_once "../lib/header.html";
         </div>
         <div class="checkbox">
             <label>
-                <input name="formatF5" type="checkbox"> Use one line output format (F5)
+                <input name="formatF5" type="checkbox"> Use one line per document output format (F5)
             </label>
         </div>
         <div class="checkbox"></div>
