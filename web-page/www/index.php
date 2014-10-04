@@ -17,10 +17,13 @@ include_once "../lib/header.html";
         The form can accept up to 5 patterns for each of the lists. When you wish to use more, use files.
         In a file, each pattern should be in its own line.
     </div>
-    <h3 class="text-warning col-lg-offset-2 text-center">
-        Please, use the search wisely, since it occupies a lot of resources!
-    </h3>
-
+    <br>
+    <div class="alert alert-danger col-lg-offset-2 text-center">
+        <strong style="font-size: 17px">Please, use the search wisely, since it occupies a lot of resources!</strong>
+        <!--<h4 class="text-warning col-lg-offset-2 text-center">
+            Please, use the search wisely, since it occupies a lot of resources!
+        </h4>-->
+    </div>
 </div>
 
 <form enctype="multipart/form-data" class="form-horizontal" method="post" action="submit.php">
