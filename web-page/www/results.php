@@ -41,6 +41,7 @@ header("refresh:".$REFRESH_RATE );
             <th class="text-center">Hadoop tracking</th>
             <th class="text-center">Result files</th>
             <th class="text-center">Hadoop out</th>
+            <th class="text-center">See form data</th>
         </tr>
         </thead>
         <tbody>
@@ -119,7 +120,7 @@ header("refresh:".$REFRESH_RATE );
             else{
                 echo "<td class='text-center table-cell-center'></td>\n";
             }
-
+            echo "<td class='text-center table-cell-center'> <a target='_blank' href='index.php?show_form_id=".$job->id."'>link</a> </td>\n";
             echo "</tr>";
         }
         ?>

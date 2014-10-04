@@ -22,13 +22,24 @@ $GLOBALS['log'] = $log;
 
 class Job{
     public $id;
-    private $path;
+    public $path;
 
     public function __construct($id){
         global $QUEUE_PATH;
 
         $this->id = $id;
         $this->path = $QUEUE_PATH.$id.'/';
+    }
+
+    public function store_post_data($_POST_IN){
+        $p = serialize($_POST_IN);
+        $file = $this->path.'post_data';
+        file_put_contents($file, $p);
+    }
+
+    public function get_post_data(){
+        $file = $this->path.'post_data';
+        return unserialize(file_get_contents($file));
     }
 
     public function get_dependency_files(){
@@ -43,6 +54,17 @@ class Job{
             }
         }
         return $present;
+    }
+
+    public function get_dependency_file($file){
+        global $PUBLIC_FILES_LINK;
+        if(is_file($this->path.$file)){
+            return $PUBLIC_FILES_LINK.$this->id.'/'.$file;
+        }
+        else{
+            $GLOBALS['log']->error('Can not return link for file that does not exists! JobID: '.$this->id);
+            return '#';
+        }
     }
 
     public function get_hadoop_out_link(){
@@ -141,6 +163,13 @@ class Job{
     }
 
     // status setters
+    public function set_to_new(){
+        $handle = fopen($this->path.'_NEW', 'w');
+        if (!$handle) {
+            $GLOBALS['log']->error('Can not create state _NEW file! JobID: '.$this->id);
+        }
+        fclose($handle);
+    }
     public function set_to_submitted(){
         $this->set_to_state('_SUBMITTED');
     }
@@ -224,5 +253,4 @@ function job_exists($id){
     }
     return false;
 }
-
 ?>

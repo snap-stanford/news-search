@@ -36,7 +36,7 @@ $( document ).ready(function() {
     for(var id in list) {
         var wl = list[id] + "W";
         var bl = list[id] + "B";
-        $("#" + wl).on("change.bs.fileinput", disableFields(wl)).on("clear.bs.fileinput", enableFields(wl));
-        $("#" + bl).on("change.bs.fileinput", disableFields(bl)).on("clear.bs.fileinput", enableFields(bl));
+        $("#" + wl + "LF").on("change.bs.fileinput", disableFields(wl)).on("fileclear", enableFields(wl));
+        $("#" + bl + "LF").on("change.bs.fileinput", disableFields(bl)).on("fileclear", enableFields(bl));
     }
 });

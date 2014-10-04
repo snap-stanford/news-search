@@ -25,7 +25,7 @@ $PROBLEMS = false;
 $NOTIFICATION = '';
 
 /**
- * Write out command to the file given
+ * Write out command
  */
 function write_command($path, $jobID){
     $file = fopen($path, 'w');
@@ -129,6 +129,10 @@ function copy_uploaded_files($path){
                 if (!move_uploaded_file($_FILES[$file]['tmp_name'], $path.$file.'.txt')){
                     errmsg("error while copying files from temp directory!");
                 }
+                else{
+                    // hack, store filename to post, so you can show it in form
+                    $_POST[$file] = $file.'.txt';
+                }
             }
         }
     }
@@ -183,8 +187,7 @@ if (isset($_POST['search'])) {
     $currentJOB->set_start_date(date('Y-m-d H:i:s', $timestamp));
 
     // set state to new
-    $file = fopen($jobPath.'_NEW', 'w');
-    fclose($file);
+    $currentJOB->set_to_new();
 
     // write command to file
     write_command($jobPath.'command', $jobID);
@@ -197,6 +200,7 @@ if (isset($_POST['search'])) {
 
     if(!$PROBLEMS){
         sccmsg();
+        $currentJOB->store_post_data($_POST);
         header("refresh:".$SLEEP.";url=results.php" );
     }
     else{
