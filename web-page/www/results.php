@@ -38,10 +38,10 @@ header("refresh:".$REFRESH_RATE );
             <th class="text-center">Date</th>
             <th class="text-center">Time</th>
             <th class="text-center">Progress</th>
-            <th class="text-center">Hadoop tracking</th>
-            <th class="text-center">Result files</th>
-            <th class="text-center">Hadoop out</th>
-            <th class="text-center">See form data</th>
+            <th class="text-center">Hadoop Tracking</th>
+            <th class="text-center">Search Results</th>
+            <th class="text-center">Hadoop Out</th>
+            <th class="text-center">Filled Form</th>
         </tr>
         </thead>
         <tbody>
@@ -107,14 +107,18 @@ header("refresh:".$REFRESH_RATE );
                 echo "<td class='text-center table-cell-center'>$status</td>\n";
             }
             if($job->is_running() || $job->is_success() || $job->is_fail()){
-                echo "<td class='text-center table-cell-center'><a target='_blank' href='".$job->get_hadoop_link()."'>link</a></td>\n";
+                if($job->has_hadoop_track_link()){
+                    echo "<td class='text-center table-cell-center'><a target='_blank' href='".$job->get_hadoop_track_link()."'>link</a></td>\n";
+                }else{
+                    echo "<td class='text-center table-cell-center'></td>\n";
+                }
                 echo "<td class='text-center table-cell-center'><a target='_blank' href='".$job->get_results_link()."'>link</a></td>\n";
             }
             else{
                 echo "<td class='text-center table-cell-center'></td>\n";
                 echo "<td class='text-center table-cell-center'></td>\n";
             }
-            if($job->get_hadoop_out_link() != false){
+            if($job->has_hadoop_out_link()){
                 echo "<td class='text-center table-cell-center'><a target='_blank' href='".$job->get_hadoop_out_link()."'>link</a></td>\n";
             }
             else{

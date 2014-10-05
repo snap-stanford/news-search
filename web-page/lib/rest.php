@@ -39,7 +39,7 @@ class REST {
         $this->args = $args;
 
         // log
-        $GLOBALS['log']->info('Incoming REST call for method '.$this->method.' with arguments: '.implode($args));
+        //$GLOBALS['log']->info('Incoming REST call for method '.$this->method.' with arguments: '.implode($args));
     } //function __construct
 
     public function processAPI() {
@@ -56,7 +56,7 @@ class REST {
                         $JSON = array(
                             'newJob' => true,
                             'jobID' => $job->id ,
-                            'dependencies' => $job->get_dependency_files()
+                            'dependencies' => $job->get_dependency_links()
                         );
                         $gotNew = true;
 
@@ -71,7 +71,7 @@ class REST {
                     $JSON = array('newJob' => false);
 
                     // log
-                    $GLOBALS['log']->info('No new job found!');
+                    //$GLOBALS['log']->info('No new job found!');
                 }
 
                 // send JSON
@@ -80,20 +80,20 @@ class REST {
                 break;
             case "PUT":
                 if (!isset($this->args[0])) {
-                    $GLOBALS['log']->info('Queue ID not set!');
+                    $GLOBALS['log']->error('Queue ID not set!');
                     $this->fail("Invalid queue ID", 406);
                 }
 
                 // check type is json
                 if ($_SERVER['CONTENT_TYPE'] != "application/json") {
-                    $GLOBALS['log']->info('Unsupported content type: '.$_SERVER['CONTENT_TYPE']);
+                    $GLOBALS['log']->error('Unsupported content type: '.$_SERVER['CONTENT_TYPE']);
                     $this->fail("Unsupported content type. Expecting: application/json.", 500);
                 }
 
                 // if job with this id does not exist, fail
                 $jobID = $this->args[0];
                 if(!job_exists($jobID)){
-                    $GLOBALS['log']->info('No job with ID ' . $jobID);
+                    $GLOBALS['log']->error('No job with ID ' . $jobID);
                     $this->fail("Invalid queue ID, no such job", 406);
                 }
                 $job = new Job($jobID);
@@ -102,7 +102,7 @@ class REST {
                 $json = file_get_contents('php://input');
                 $json = json_decode($json, true);
                 if ($json == null) {
-                    $GLOBALS['log']->info('Incorrectly formatted json input.');
+                    $GLOBALS['log']->error('Incorrectly formatted json input.');
                     $this->fail("Incorrectly formatted json input.", 500);
                 }
 
@@ -114,8 +114,11 @@ class REST {
                             $job->set_to_submitted();
                             $GLOBALS['log']->info('Job '.$jobID. ' status set to SUBMITTED.');
                         } elseif ($json['status'] == 'running') {
+                            // since we update the status with all messages, log just the first time
+                            if(!$job->is_running()){
+                                $GLOBALS['log']->info('Job '.$jobID. ' status set to RUNNING.');
+                            }
                             $job->set_to_running();
-                            $GLOBALS['log']->info('Job '.$jobID. ' status set to RUNNING.');
                         } elseif ($json['status'] == 'success') {
                             $job->set_to_success();
                             $GLOBALS['log']->info('Job '.$jobID. ' status set to SUCCESS.');
@@ -127,14 +130,17 @@ class REST {
 
                     // tracking URL
                     if(isset($json['tracking'])) {
-                        $job->set_hadoop_link($json['tracking']);
-                        $GLOBALS['log']->info('Job '.$jobID. ' updating tracking link.');
+                        // since we update the url with all messages, log just the first time
+                        if(!$job->has_hadoop_track_link()){
+                            $GLOBALS['log']->info('Job '.$jobID. ' setting tracking link.');
+                        }
+                        $job->set_hadoop_track_link($json['tracking']);
                     }
 
                     // progress
                     if(isset($json['progress'])) {
                         $job->update_progress($json['progress']);
-                        $GLOBALS['log']->info('Job '.$jobID. ' updating progress.');
+                        //$GLOBALS['log']->info('Job '.$jobID. ' updating progress.');
                     }
 
                     // hadoop out
@@ -146,7 +152,7 @@ class REST {
 
                 break;
             default:
-                $GLOBALS['log']->info('Method not allowed!.');
+                $GLOBALS['log']->error('Method not allowed!.');
                 $this->fail("Method not allowed.", 405);
         }
     } //function processAPI

@@ -42,7 +42,7 @@ class Job{
         return unserialize(file_get_contents($file));
     }
 
-    public function get_dependency_files(){
+    public function get_dependency_links(){
         global $PUBLIC_FILES_LINK;
         $possible_files = array('command', 'langWLF.txt', 'urlWLF.txt', 'keywordWLF.txt', 'titleWLF.txt',
             'contentWLF.txt', 'quoteWLF.txt', 'langBLF.txt', 'urlBLF.txt', 'keywordBLF.txt', 'titleBLF.txt',
@@ -56,7 +56,7 @@ class Job{
         return $present;
     }
 
-    public function get_dependency_file($file){
+    public function get_dependency_link($file){
         global $PUBLIC_FILES_LINK;
         if(is_file($this->path.$file)){
             return $PUBLIC_FILES_LINK.$this->id.'/'.$file;
@@ -65,6 +65,10 @@ class Job{
             $GLOBALS['log']->error('Can not return link for file that does not exists! JobID: '.$this->id);
             return '#';
         }
+    }
+
+    public function has_hadoop_out_link(){
+        return file_exists($this->path.'hadoop-output.log');
     }
 
     public function get_hadoop_out_link(){
@@ -87,16 +91,16 @@ class Job{
         }
         fclose($handle);
     }
-    public function set_hadoop_link($url){
+    public function set_hadoop_track_link($url){
         $handle = fopen($this->path.'/hadoop-track-url.log', "w");
         if ($handle) {
             fwrite($handle, $url."\n");
         } else {
-            $GLOBALS['log']->error('Can not open file for hadoop tracking link! JobID: '.$this->id);
+            $GLOBALS['log']->error('Can not open file for hadoop tracking link set! JobID: '.$this->id);
         }
         fclose($handle);
     }
-    public function get_hadoop_link(){
+    public function get_hadoop_track_link(){
         $url = '';
         $handle = fopen($this->path.'/hadoop-track-url.log', "r");
         if ($handle) {
@@ -104,10 +108,13 @@ class Job{
                 $url = str_replace(array("\n"), '', $line);
             }
         } else {
-            $GLOBALS['log']->error('Can not open file for hadoop tracking link! JobID: '.$this->id);
+            $GLOBALS['log']->error('Can not open file for hadoop tracking link get! JobID: '.$this->id);
         }
         fclose($handle);
         return $url;
+    }
+    public function has_hadoop_track_link(){
+        return is_file($this->path.'/hadoop-track-url.log');
     }
 
     public function get_results_link(){
@@ -236,7 +243,7 @@ function get_job_list(){
             }
         }
     }else{
-        $GLOBALS['log']->error('Can not QUEUE folder!');
+        $GLOBALS['log']->error('Can not open QUEUE folder!');
     }
     rsort($all_jobs);
     return $all_jobs;

@@ -21,7 +21,7 @@ function insert_input($name){
 
     if($SHOW){
         if(isset($DATA[$name])){
-            echo '<a href="'.$job->get_dependency_file($DATA[$name]).'" target="_blank" >
+            echo '<a href="'.$job->get_dependency_link($DATA[$name]).'" target="_blank" >
                 <input type="text" class="form-control" value="'.$DATA[$name].'" disabled></a>';
         }
         else{
