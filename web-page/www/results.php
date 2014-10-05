@@ -1,8 +1,8 @@
 <?php
 
 // Report all PHP errors (see changelog)
-//error_reporting(E_ALL);
-//ini_set('display_errors', '1');
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
 
 // includes
 include_once '../lib/header.html';
@@ -35,6 +35,7 @@ header("refresh:".$REFRESH_RATE );
     <table class="table table-striped table-hover">
         <thead>
         <tr>
+            <th class="text-center">#</th>
             <th class="text-center">Date</th>
             <th class="text-center">Time</th>
             <th class="text-center">Progress</th>
@@ -89,6 +90,7 @@ header("refresh:".$REFRESH_RATE );
             $date = $job->get_start_date();
 
             echo "<tr class='$class' class='text-center'>\n";
+            echo "<td class='text-center table-cell-center'>".$job->get_sequence_number()."</td>\n";
             echo "<td class='text-center table-cell-center'>".$date[0]."</td>\n";
             echo "<td class='text-center table-cell-center'>".$date[1]."</td>\n";
             if($job->is_running()){

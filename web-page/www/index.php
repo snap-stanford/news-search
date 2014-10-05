@@ -2,6 +2,10 @@
 include_once "../lib/header.html";
 include_once "../lib/job_handler.php";
 
+// Report all PHP errors (see changelog)
+//error_reporting(E_ALL);
+//ini_set('display_errors', '1');
+
 if(isset($_GET['show_form_id'])){
     if(!job_exists($_GET['show_form_id'])){
         //redirect

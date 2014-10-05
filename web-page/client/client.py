@@ -21,11 +21,13 @@ import subprocess
 
 # init logging
 FORMAT='%(asctime)s [%(levelname)s] %(message)s'
-logging.basicConfig(filename='logClient.log', format=FORMAT, level=logging.WARN)    # for production use at least WARN
+# for production use INFO, to log status changes
+# for debugging use DEBUG, to se a lot more
+logging.basicConfig(filename='logClient.log', format=FORMAT, level=logging.INFO)
 # set the logging lever for requests module to WARNING
 # since at INFO it write a line for each requests!
 logging.getLogger('requests').setLevel(logging.WARNING)
-logging.info('Client started')
+logging.debug('Client started')
 
 
 def load_file(link_, fname_):
@@ -129,7 +131,7 @@ def get_tracking_url(ofile):
             if 'The url to track the job' in line.strip():
                 url = re.search("(?P<url>https?://[^\s]+)", line).group("url")
                 return url
-        logging.info("The tracking URL is not present yet.")
+        logging.debug("The tracking URL is not present yet.")
     else:
         logging.error("Hadoop output file is missing!")
     return None
@@ -148,7 +150,7 @@ def report_progress(ofile):
                 line = line.split(' ')
                 progress = line[6]+' '+line[8]
         if progress is None:
-            logging.info("The progress is not present yet.")
+            logging.debug("The progress is not present yet.")
         return progress
     else:
         logging.error("Hadoop output file is missing!")
@@ -208,7 +210,7 @@ def update_state(job_id, status=None, tracking=None, progress=None, hadoop_out=N
         # check response code
         if r.status_code != 200:
             logging.error("Got response with status code %s while updating!" % r.status_code)
-        logging.info('Sent out data:' + dataJson)
+        logging.debug('Sent out data:' + dataJson)
     except Exception as e:
         logging.error("Error while updating status! Message: " + e.message)
 
@@ -233,7 +235,7 @@ if not os.path.exists(WORKING_DIRECTORY):
         jobID = jsonData['jobID']
         write_to_file(JOB_ID, jobID)
 
-        logging.warn("Starting job with remote ID %s." % jobID)
+        logging.info("Starting job with remote ID %s." % jobID)
 
         # get dependencies
         for link in jsonData['dependencies'].values():
@@ -242,7 +244,7 @@ if not os.path.exists(WORKING_DIRECTORY):
 
         # set status to submitted
         update_state(jobID, status='submitted')
-        logging.warn("Job %s set to submitted." % jobID)
+        logging.info("Job %s set to submitted." % jobID)
 
         # read arguments, run the job and store PID
         arguments = read_command()
@@ -250,10 +252,10 @@ if not os.path.exists(WORKING_DIRECTORY):
         write_to_file(PID, str(p.pid))
 
         # set status to running
-        logging.warn("Job %s set to running." % jobID)
+        logging.info("Job %s set to running." % jobID)
         update_state(jobID, status='running')
     else:
-        logging.info("No new job!")
+        logging.debug("No new job!")
     exit(0)
 
 #
@@ -278,10 +280,10 @@ elif os.path.isfile(WORKING_DIRECTORY+'/'+PID):
     if e is not None:
         if e:
             update_state(jobID, status='success')
-            logging.warn("Job %s succeeded." % jobID)
+            logging.info("Job %s succeeded." % jobID)
         else:
             update_state(jobID, status='fail')
-            logging.warn("Job %s failed." % jobID)
+            logging.info("Job %s failed." % jobID)
 
         # the process should be done by now
         # just to be sure, wait till it is not gone

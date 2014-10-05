@@ -31,6 +31,23 @@ class Job{
         $this->path = $QUEUE_PATH.$id.'/';
     }
 
+    public function set_sequence_number(){
+        if(!file_put_contents($this->path.'/sequence', next_sequence_number())){
+            $GLOBALS['log']->error('Can not store new sequence number! JobID: '.$this->id);
+        }
+    }
+
+    public function get_sequence_number(){
+        $s = file_get_contents($this->path.'/sequence');
+        if($s) {
+            return $s;
+        }
+        else{
+            $GLOBALS['log']->error('Can not read sequence number! JobID: '.$this->id);
+            return -1;
+        }
+    }
+
     public function store_post_data($_POST_IN){
         $p = serialize($_POST_IN);
         $file = $this->path.'post_data';
@@ -260,4 +277,15 @@ function job_exists($id){
     }
     return false;
 }
+
+function next_sequence_number(){
+    $next = 0;
+    foreach (get_job_list() as $job) {
+        if($job->get_sequence_number() > $next){
+            $next = $job->get_sequence_number();
+        }
+    }
+    return $next + 1;
+}
+
 ?>

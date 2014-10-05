@@ -8,8 +8,8 @@
 //echo "</pre>";
 
 // Report all PHP errors (see changelog)
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
+//error_reporting(E_ALL);
+//ini_set('display_errors', '1');
 
 // includes
 include_once '../lib/job_handler.php';
@@ -201,6 +201,7 @@ if (isset($_POST['search'])) {
     if(!$PROBLEMS){
         sccmsg();
         $currentJOB->store_post_data($_POST);
+        $currentJOB->set_sequence_number();
         header("refresh:".$SLEEP.";url=results.php" );
     }
     else{
