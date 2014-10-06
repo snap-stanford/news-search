@@ -98,7 +98,7 @@ function set_if_present_checkbox($name, $default){
         <legend>Instructions</legend>
         <div class="col-lg-offset-2">
             The search is based on the white and black list concept. Documents can be filtered by many different fields.
-            Each filtering pattern can be a word or a java regular expression.
+            Each filtering pattern is a java regular expression.
             When using white or black lists, the document must match with some pattern of the white list and can not
             match with any pattern of the black list for it to be propagated to results. You can think of this, as there is
             an 'or' between the white list's patterns. If you wish to use 'and', put the patters in the same field and separate
