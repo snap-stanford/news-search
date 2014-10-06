@@ -98,6 +98,7 @@ function set_if_present_checkbox($name, $default){
         <legend>Instructions</legend>
         <div class="col-lg-offset-2">
             The search is based on the white and black list concept. Documents can be filtered by many different fields.
+            Each filtering pattern can be a word or a java regular expression.
             When using white or black lists, the document must match with some pattern of the white list and can not
             match with any pattern of the black list for it to be propagated to results. You can think of this, as there is
             an 'or' between the white list's patterns. If you wish to use 'and', put the patters in the same field and separate
@@ -254,7 +255,9 @@ function set_if_present_checkbox($name, $default){
         <label class="col-lg-2 control-label"></label>
         <div class="col-lg-10">
             Documents have associated the source URL. Some, however, have invalid URLs
-            and consequently the source domain name is unknown.
+            and consequently the source domain name is unknown. Note that since we use
+            regular expression the dot (.) stands for any character. To make sure that
+            the url is for example "cnn.com" you have to escape it like "cnn\\.com".
         </div>
     </div>
 
@@ -264,7 +267,7 @@ function set_if_present_checkbox($name, $default){
             <div class="">
                 <div class="col-lg-2-no-padding padding-right-2">
                     <input name="urlWL1" type="text" class="form-control" id="urlW1"
-                        <?php print_if_present('urlWL1', 'stanford.edu');?>>
+                        <?php print_if_present('urlWL1', 'stanford\\\\.edu');?>>
                 </div>
                 <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
                     <input name="urlWL2" type="text" class="form-control" id="urlW2"
@@ -295,7 +298,7 @@ function set_if_present_checkbox($name, $default){
             <div class="">
                 <div class="col-lg-2-no-padding padding-right-2">
                     <input name="urlBL1" type="text" class="form-control" id="urlB1"
-                        <?php print_if_present('urlBL1', 'spam.com');?>>
+                        <?php print_if_present('urlBL1', 'spam\\\\.com');?>>
                 </div>
                 <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
                     <input name="urlBL2" type="text" class="form-control" id="urlB2"
@@ -615,6 +618,13 @@ function set_if_present_checkbox($name, $default){
 
     <!-- Remove versions -->
     <legend>Remove versions</legend>
+    <div class="form-group">
+        <label class="col-lg-2 control-label"></label>
+        <div class="col-lg-10">
+            You can read more about the versions on the <a href="http://snap.stanford.edu/moin/Spinn3rFormat" target="_blank">wiki</a> at the bottom of the page.
+        </div>
+    </div>
+
     <div class="form-group">
         <div class="col-lg-10 margin-left-content">
 
