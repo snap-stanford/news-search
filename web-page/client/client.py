@@ -1,23 +1,27 @@
 __author__ = 'Niko'
 
+HOST = 'snap.stanford.edu'  # Define which host in the .netrc file to use
 WORKING_DIRECTORY = "./running_job"
 HADOOP_OUT = 'hadoop-out.log'
 JOB_ID = 'jobID.txt'
 PID = 'pid.txt'
 URL = 'http://snap.stanford.edu/news-search/api/queue.php'
-user = 'newssearchapi'
-password = 'oreiherugfqiwefhweuhf93'
 COMMAND = 'hadoop jar /afs/cs.stanford.edu/u/niko/news-search/target/Spinn3rHadoop-0.0.1-SNAPSHOT.jar '
 
 import re
 import os
 import json
 import time
+import netrc
 import shutil
 import ntpath
 import logging
 import requests
 import subprocess
+
+# read username and password
+secrets = netrc.netrc('.netrc')
+user, account, password = secrets.authenticators(HOST)
 
 # init logging
 FORMAT='%(asctime)s [%(levelname)s] %(message)s'
