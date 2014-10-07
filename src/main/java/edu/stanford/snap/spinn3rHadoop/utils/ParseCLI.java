@@ -324,6 +324,35 @@ public class ParseCLI {
 	}
 	
 	/**
+	 * Used for regex simplification for files.
+	 * 
+	 * When you use a lot of regexs and with an OR between them
+	 * they can be squeezed into one regular expression with ORs
+	 * inside the regex itself.
+	 * */
+	private static ArrayList<String> simplifyRegex(ArrayList<String> in){
+		ArrayList<String> simple = new ArrayList<String>();
+		String merged = "";
+		for(String pattern: in){
+			if(pattern.contains("&&")){
+				simple.add(pattern);
+			}
+			else {
+				// concatenate all without a && inside
+				if(merged.length() == 0){
+					merged = pattern;
+				}
+				else {
+					merged += "|"+pattern;
+				}
+			}
+		}
+		simple.add(merged);
+		
+		return simple;
+	}
+	
+	/**
 	 * Helper for reading arguments from file
 	 * */
 	private static String [] fixOneFile(String argument, CommandLine cmd, String [] args) throws FileNotFoundException{
@@ -336,6 +365,8 @@ public class ParseCLI {
 				ArrayList<String> content = new ArrayList<String>();
 				while(in.hasNextLine())
 					content.add(in.nextLine());
+				//simplify patterns by merging as much as possible to one regex wit a lot of ORs
+				content = simplifyRegex(content);
 				int fnameIndex = Arrays.asList(args).indexOf(fname);
 				String [] new_args = new String[args.length - 1 + content.size()];
 				System.arraycopy(args, 0, new_args, 0, fnameIndex);
