@@ -31,31 +31,31 @@ import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument.Quote;
  * */
 
 public class DocumentFilter {
-	private String formatInput = "yyyy-MM-dd'T'HH";
-	private static String AND_SIGN = "&&";
-	private Matcher matcher;
-	private String [] langWL;
-	private String [] langBL;
-	private ArrayList<ArrayList<Pattern>> keywordWL;
-	private ArrayList<ArrayList<Pattern>> keywordBL;
-	private ArrayList<ArrayList<Pattern>> urlWL;
-	private ArrayList<ArrayList<Pattern>> urlBL;
-	private ArrayList<ArrayList<Pattern>> titleWL;
-	private ArrayList<ArrayList<Pattern>> titleBL;
-	private ArrayList<ArrayList<Pattern>> contentWL;
-	private ArrayList<ArrayList<Pattern>> contentBL;
-	private ArrayList<ArrayList<Pattern>> quoteWL;
-	private ArrayList<ArrayList<Pattern>> quoteBL;
-	private String [] removeVersions;
-	private boolean removeNoLanguage;
-	private boolean removeGarbled;
-	private boolean removeUnparsableURL;
-	private boolean removeEmptyTitle;
-	private boolean removeEmptyContent;
-	private boolean removeNoQuotes;
-	private boolean caseInsensitive;
-	private Date start;
-	private Date end;
+	protected String formatInput = "yyyy-MM-dd'T'HH";
+	protected static String AND_SIGN = "&&";
+	protected Matcher matcher;
+	protected String [] langWL;
+	protected String [] langBL;
+	protected ArrayList<ArrayList<Pattern>> keywordWL;
+	protected ArrayList<ArrayList<Pattern>> keywordBL;
+	protected ArrayList<ArrayList<Pattern>> urlWL;
+	protected ArrayList<ArrayList<Pattern>> urlBL;
+	protected ArrayList<ArrayList<Pattern>> titleWL;
+	protected ArrayList<ArrayList<Pattern>> titleBL;
+	protected ArrayList<ArrayList<Pattern>> contentWL;
+	protected ArrayList<ArrayList<Pattern>> contentBL;
+	protected ArrayList<ArrayList<Pattern>> quoteWL;
+	protected ArrayList<ArrayList<Pattern>> quoteBL;
+	protected String [] removeVersions;
+	protected boolean removeNoLanguage;
+	protected boolean removeGarbled;
+	protected boolean removeUnparsableURL;
+	protected boolean removeEmptyTitle;
+	protected boolean removeEmptyContent;
+	protected boolean removeNoQuotes;
+	protected boolean caseInsensitive;
+	protected Date start;
+	protected Date end;
 
 
 	public DocumentFilter(CommandLine cmd){
