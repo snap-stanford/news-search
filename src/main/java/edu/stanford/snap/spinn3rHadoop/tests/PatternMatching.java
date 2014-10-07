@@ -6,8 +6,12 @@ import java.util.regex.Pattern;
 public class PatternMatching {
 
 	public static void main(String[] args) {
-		Pattern p = Pattern.compile("SLOVENIA", Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher("Slovenia is a nice country.");
+		String query = "^edu.nytimes";
+		String queryEscaped = Pattern.quote(query);
+		Pattern p = Pattern.compile(queryEscaped, Pattern.CASE_INSENSITIVE);
+		
+		String s = "edu.nytimes.com";
+		Matcher m = p.matcher(s);
 		
 		if (m.find()){
 			System.out.println("It matches!");

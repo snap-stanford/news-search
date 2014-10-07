@@ -1,5 +1,6 @@
 package edu.stanford.snap.spinn3rHadoop.utils;
 
+import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -268,13 +269,13 @@ public class DocumentFilter {
 		return true;
 	}
 
-	public static void main(String [] args) throws MalformedURLException{
+	public static void main(String [] args) throws MalformedURLException, FileNotFoundException{
 		/** Sample document */
 		String documentString = "I	2008080100_00000000_W\n"
 				+ "V	B\n"
 				+ "S	en	0.999996\n"
 				+ "G	false	1.0\n"
-				+ "U	http://codeproject.com/KB/silverlight/convertsilverlightcontrol.aspx\n"
+				+ "U	http://times.com/KB/silverlight/convertsilverlightcontrol.aspx\n"
 				+ "D	2013-09-02 17:00:00\n"
 				+ "T	codeproject how to convert a silverlight control to a visual webgui \n"
 				+ "C	how to convert a silverlight control to \n"
@@ -285,10 +286,16 @@ public class DocumentFilter {
 				+ "Q	3047	134	 videoplayer.silverlight.controls.videoplayer, videoplayer.silverlight.controls, version=1.0.0.0, culture=neutral, publickeytoken=null\n"
 				+ "Q	3633	6	 this.\n"
 				+ "Q	4110	55	 videoplayer.controls.videoplayer, videoplayer.controls\n"
-				+ "Q	4513	6	how to\n";
+				+ "Q	4513	6	how to";
 
 		CommandLine cmd = ParseCLI.parse(args);
+		
+		/** Fill in arguments from file */
+		String [] new_args = ParseCLI.replaceArgumentsFromFile(args, cmd);
+		cmd = ParseCLI.parse(new_args);
 		ParseCLI.printArguments(cmd);
+
+		
 		DocumentFilter filter = new DocumentFilter(cmd);
 		Spinn3rDocument d = new Spinn3rDocument(documentString);
 		System.out.println("This document passed search conditions: " + filter.documentSatisfies(d));
