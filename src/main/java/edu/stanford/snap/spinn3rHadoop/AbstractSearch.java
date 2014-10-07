@@ -30,53 +30,57 @@ import org.apache.hadoop.util.Tool;
 import edu.stanford.snap.spinn3rHadoop.utils.ParseCLI;
 
 public abstract class AbstractSearch extends Configured implements Tool {
-  
+	
+	private CommandLine cmd = null;
+	
 	public enum ProcessingTime {
 		PARSING,
 		FILTERING,
 		SETUP,
 		SKIPPED
 	}
-	
-  //////////////////
-	private CommandLine cmd = null;
-	
-	/** Store the command line and return the updated args */
+
+	/** 
+	 * Read arguments from file, store the command line and return the updated args.
+	 * */
 	protected String[] setCommandLine(String[] args) throws FileNotFoundException {
-    /** Check for arguments */
-    cmd = ParseCLI.parse(args);
-    if(cmd == null){
-      System.exit(-1);
-    }
-	  
-    /** Fill in arguments from file */
-    String [] new_args = ParseCLI.replaceArgumentsFromFile(args, cmd);
-    cmd = ParseCLI.parse(new_args);
-    ParseCLI.printArguments(cmd);
-    return new_args;
+
+		/** Check for arguments */
+		cmd = ParseCLI.parse(args);
+		if(cmd == null){
+			System.exit(-1);
+		}
+
+		/** Fill in arguments from files */
+		String [] new_args = ParseCLI.replaceArgumentsFromFile(args, cmd);
+		cmd = ParseCLI.parse(new_args);
+		// print arguments for debugging
+		ParseCLI.printArguments(cmd);
+		return new_args;
 	}
-	
+
 	protected CommandLine getCommandLine() {
-	  return cmd;
+		return cmd;
 	}
 
-  public abstract Class<? extends Mapper<? extends Writable, ? extends Writable, ? extends Writable, ? extends Writable>> getMapperClass();
+	public abstract Class<? extends Mapper<? extends Writable, ? extends Writable, ? extends Writable, ? extends Writable>> getMapperClass();
 
-  @SuppressWarnings("rawtypes")
-  public Class<? extends Reducer> getReducerClass() {
-    return Reducer.class;
-  }
+	@SuppressWarnings("rawtypes")
+	public Class<? extends Reducer> getReducerClass() {
+		return Reducer.class;
+	}
 
 	@Override
 	public int run(String[] args) throws Exception {
-    //////////////////
-	  String[] new_args = setCommandLine(args);
+
+		/** Fill in from file, set and return the command line arguments */
+		String [] new_args = setCommandLine(args);
 
 		/** Get configuration */
 		Configuration conf = getConf();
 		conf.set("textinputformat.record.delimiter","\n\n");
 		conf.setStrings("args", new_args);
-		
+
 		/** Set the number of output replications */
 		conf.set("dfs.replication", "1");
 
@@ -98,17 +102,14 @@ public abstract class AbstractSearch extends Configured implements Tool {
 		job.setOutputValueClass(NullWritable.class);
 
 		/** Set Mapper and Reducer, use identity reducer*/
-    //////////////////
 		job.setMapperClass(getMapperClass());
 		if(cmd.hasOption("reducers")){
 			int numReducers = Integer.valueOf(cmd.getOptionValue("reducers"));
-      //////////////////
 			job.setReducerClass(getReducerClass());
 			job.setNumReduceTasks(numReducers);
 		}
 		else{
 			job.setNumReduceTasks(1);
-			//////////////////
 			job.setReducerClass(getReducerClass());
 		}
 
@@ -139,7 +140,6 @@ public abstract class AbstractSearch extends Configured implements Tool {
 	 * according to its name and the date and content limitations
 	 * provided on input.
 	 * */
-  ////////////////// now non-static
 	public static class Spinn3rInputFilter extends Configured implements PathFilter {
 		String formatInput = "yyyy-MM-dd'T'HH";
 		String formatFile = "yyyy-MM";
@@ -148,76 +148,39 @@ public abstract class AbstractSearch extends Configured implements Tool {
 		Date searchStart;
 		Date searchEnd;
 		Configuration conf;
-		
-		
+
 		@Override
-	    public void setConf(Configuration conf) {
-	        this.conf = conf;
-	        System.out.println("Inside setconf");
-	        System.out.println(conf);
-	        if(conf != null){
-	        	System.out.println(Arrays.asList(conf.getStrings("args")));
-	        	this.conf = conf;
-	        	
-	        	String [] args = conf.getStrings("args");
-	        	CommandLine cmd = ParseCLI.parse(args);
-				System.out.println("Ahoj2");
+		public void setConf(Configuration conf) {
+			/**
+			 * Due to some strange reason the setConf is called twice, 
+			 * the first time with conf=null and the second time with
+			 * the actual configuration.
+			 * 
+			 * See also: http://hadoopi.wordpress.com/2013/07/29/hadoop-filter-input-files-used-for-mapreduce/
+			 * */
+			if(conf != null){
+				this.conf = conf;
+
+				String [] args = conf.getStrings("args");
+				CommandLine cmd = ParseCLI.parse(args);
+
 				try {
 					searchStart = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("start"));
 					searchEnd = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("end"));
+					searchContent = Arrays.asList(cmd.getOptionValues("content"));
 				} catch (ParseException e) {
-					// TODO Auto-generated catch block
+					System.out.println("ERROR while parsing date! Message: " + e.getLocalizedMessage());
 					e.printStackTrace();
+					System.exit(-1);
 				}
-				searchContent = Arrays.asList(cmd.getOptionValues("content"));
-	        }
-	        /**
-	        String [] args = .getStrings("args");
-	        CommandLine cmd = ParseCLI.parse(args);
-			System.out.println("Ahoj2");
-			try {
-				searchStart = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("start"));
-				searchEnd = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("end"));
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
-			searchContent = Arrays.asList(cmd.getOptionValues("content"));
-			*/
-	    }
-		
-		//public Spinn3rInputFilter(Configuration c) throws FileNotFoundException, ParseException{
-		//	super(c);
-			
-			/** Parse job limitation form command line */
-      //////////////////
-			/**
-			System.out.println("Ahoj!");
-			System.out.println(conf);
-			String [] args = getConf().getStrings("args");
-			System.out.println("Ahoj1");
-			System.out.println(Arrays.asList(args));
-			
-			CommandLine cmd = ParseCLI.parse(args);
-			System.out.println("Ahoj2");
-			searchStart = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("start"));
-			searchEnd = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("end"));
-			searchContent = Arrays.asList(cmd.getOptionValues("content"));
-			*/
-		//}
-
+		}
 
 		/**
 		 * Accept method gets one file path and should return T/F whether to process it or not. 
 		 * */
 		@Override
 		public boolean accept(Path path) {
-			
-			System.out.println("Ahoj before");
-			System.out.println(Arrays.asList(conf.getStrings("args")));
-			System.out.println("Ahoj after");
-			
-			
 			String fileContent;
 			String fileStartString = null;
 			Calendar fileStart;
@@ -229,6 +192,7 @@ public abstract class AbstractSearch extends Configured implements Tool {
 			/** Remove if the file contents does not match */
 			fileContent = path.getName().replaceAll("-.*", "").toUpperCase();
 			if(!searchContent.contains(fileContent)){
+				// print arguments for debugging
 				System.out.println(path.getName() + "\t\t NOT OK - WRONG CONTENT TYPE!");
 				return false;
 			}
@@ -261,25 +225,14 @@ public abstract class AbstractSearch extends Configured implements Tool {
 
 			/** Check if we should process it or not, depending on date */
 			if( fileStart.getTime().before(searchEnd) && fileEnd.getTime().after(searchStart) ){
+				// print arguments for debugging
 				System.out.println(path.getName() + "\t" + "\t\t * OK *\t\t for search time: " + searchStart + "-" + searchEnd);
 				return true;
 			}
 
+			// print arguments for debugging
 			System.out.println(path.getName() + "\t" + "\t\t *** NOT OK ***\t for search time: " + searchStart + "-" + searchEnd);
 			return false;
 		}
 	}
-
 }
-
-/**
- * 
--output out
--start 2010-12-13T23
--end 2013-09-02T17
--content WEB FB TW
--titleWL '[Oo]bama' '[Bb]arack|[Mm]ichelle'
--titleBL '[Mm]ccain' 'perry rosenstein'
-
--output out -start 2010-01-01T00 -end 2010-01-10T23 -content WEB FB TW -titleWL '[Ss]lovenia'
- * */
