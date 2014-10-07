@@ -96,7 +96,7 @@ public abstract class AbstractSearch extends Configured implements Tool {
 		fs.delete(new Path(cmd.getOptionValue("output")), true);
 
 		/** Job configuration */
-		Job job = new Job(conf, "HadoopSearch");
+		Job job = new Job(conf, getClass().getName());
 		job.setJarByClass(AbstractSearch.class);
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(NullWritable.class);
