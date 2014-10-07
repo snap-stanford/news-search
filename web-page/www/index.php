@@ -96,13 +96,23 @@ function set_if_present_checkbox($name, $default){
     <div class="control-label">
         <h1 class="space-after-title">New search</h1>
         <legend>Instructions</legend>
+
+
         <div class="col-lg-offset-2">
             The search is based on the white and black list concept. Documents can be filtered by many different fields.
-            Each filtering pattern is a java regular expression.
+        </div><br>
+
+        <div class="alert alert-info col-lg-offset-2 text-center">
+            NOTE: Each filtering pattern (except for language) is a <strong>Java regular expression</strong> (for syntax look at
+                <a href="http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html" target="_blank">documentaiton</a>).
+        </div>
+
+        <div class="col-lg-offset-2">
+            The pattern is matched if there is a substring in the document's field that match the pattern.
             When using white or black lists, the document must match with some pattern of the white list and can not
             match with any pattern of the black list for it to be propagated to results. You can think of this, as there is
             an 'or' between the white list's patterns. If you wish to use 'and', put the patters in the same field and separate
-            them with double and (&&). For example 'black && white' will search for documents containing both words, 'black'
+            them with double and (&&). For example 'black&&white' will search for documents containing both words, 'black'
             and 'white'.
             <br>
             <br>
@@ -111,7 +121,7 @@ function set_if_present_checkbox($name, $default){
         </div>
         <br>
         <div class="alert alert-danger col-lg-offset-2 text-center">
-            <strong style="font-size: 17px">Please, use the search wisely, since it occupies a lot of resources!</strong>
+            <strong>Please, use the search wisely, since it occupies a lot of resources!</strong>
         </div>
     </div>
 
@@ -257,7 +267,9 @@ function set_if_present_checkbox($name, $default){
             Documents have associated the source URL. Some, however, have invalid URLs
             and consequently the source domain name is unknown. Note that since we use
             regular expression the dot (.) stands for any character. To make sure that
-            the url is for example "cnn.com" you have to escape it like "cnn\\.com".
+            the domain name is exactly "cnn.com" you have to escape it like '^cnn\.com$'.
+            The '^' matches beginning, the '$' matches the end and they are required since
+            using just 'cnn\.com' would also match 'spam.cnn.com.spam.com'!
         </div>
     </div>
 
@@ -267,7 +279,7 @@ function set_if_present_checkbox($name, $default){
             <div class="">
                 <div class="col-lg-2-no-padding padding-right-2">
                     <input name="urlWL1" type="text" class="form-control" id="urlW1"
-                        <?php print_if_present('urlWL1', 'stanford\\\\.edu');?>>
+                        <?php print_if_present('urlWL1', '^stanford\\.edu$');?>>
                 </div>
                 <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
                     <input name="urlWL2" type="text" class="form-control" id="urlW2"
@@ -298,7 +310,7 @@ function set_if_present_checkbox($name, $default){
             <div class="">
                 <div class="col-lg-2-no-padding padding-right-2">
                     <input name="urlBL1" type="text" class="form-control" id="urlB1"
-                        <?php print_if_present('urlBL1', 'spam\\\\.com');?>>
+                        <?php print_if_present('urlBL1', 'spam\\.com');?>>
                 </div>
                 <div class="col-lg-2-no-padding padding-left-2 padding-right-2">
                     <input name="urlBL2" type="text" class="form-control" id="urlB2"
