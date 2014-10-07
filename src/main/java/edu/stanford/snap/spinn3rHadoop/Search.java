@@ -67,6 +67,9 @@ public class Search extends Configured implements Tool {
 		Configuration conf = getConf();
 		conf.set("textinputformat.record.delimiter","\n\n");
 		conf.setStrings("args", args);
+		
+		/** Set the number of output replications */
+		conf.set("dfs.replication", "1");
 
 		/** JVM PROFILING */
 		//conf.setBoolean("mapreduce.task.profile", true);
