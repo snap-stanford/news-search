@@ -1,7 +1,6 @@
 package edu.stanford.snap.spinn3rHadoop;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -16,9 +15,9 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -27,46 +26,55 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
 
-import edu.stanford.snap.spinn3rHadoop.utils.DocumentFilter;
 import edu.stanford.snap.spinn3rHadoop.utils.ParseCLI;
-import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument;
 
-public class Search extends Configured implements Tool {
-	enum ProcessingTime{
+public abstract class Search extends Configured implements Tool {
+  
+	public enum ProcessingTime {
 		PARSING,
 		FILTERING,
 		SETUP,
 		SKIPPED
 	}
-	private static CommandLine cmd = null;
-
-	public static void main(String[] args) throws Exception {
-
-		/** Check for arguments */
-		cmd = ParseCLI.parse(args);
-		if(cmd == null){
-			System.exit(-1);
-		}
-
-		/** Fill in arguments from file */
-		String [] new_args = ParseCLI.replaceArgumentsFromFile(args, cmd);
-		cmd = ParseCLI.parse(new_args);
-		ParseCLI.printArguments(cmd);
-
-		/** Run the job */
-		int res = ToolRunner.run(new Configuration(), new Search(), new_args);
-		System.exit(res);
+	
+  //////////////////
+	private CommandLine cmd = null;
+	
+	/** Store the command line and return the updated args */
+	protected String[] setCommandLine(String[] args) throws FileNotFoundException {
+    /** Check for arguments */
+    cmd = ParseCLI.parse(args);
+    if(cmd == null){
+      System.exit(-1);
+    }
+	  
+    /** Fill in arguments from file */
+    String [] new_args = ParseCLI.replaceArgumentsFromFile(args, cmd);
+    cmd = ParseCLI.parse(new_args);
+    ParseCLI.printArguments(cmd);
+    return new_args;
 	}
+	
+	protected CommandLine getCommandLine() {
+	  return cmd;
+	}
+
+  public abstract Class<? extends Mapper<? extends Writable, ? extends Writable, ? extends Writable, ? extends Writable>> getMapperClass();
+
+  public Class<? extends Reducer> getReducerClass() {
+    return Reducer.class;
+  }
 
 	@Override
 	public int run(String[] args) throws Exception {
+    //////////////////
+	  String[] new_args = setCommandLine(args);
 
 		/** Get configuration */
 		Configuration conf = getConf();
 		conf.set("textinputformat.record.delimiter","\n\n");
-		conf.setStrings("args", args);
+		conf.setStrings("args", new_args);
 		
 		/** Set the number of output replications */
 		conf.set("dfs.replication", "1");
@@ -89,15 +97,18 @@ public class Search extends Configured implements Tool {
 		job.setOutputValueClass(NullWritable.class);
 
 		/** Set Mapper and Reducer, use identity reducer*/
-		job.setMapperClass(Map.class);
+    //////////////////
+		job.setMapperClass(getMapperClass());
 		if(cmd.hasOption("reducers")){
 			int numReducers = Integer.valueOf(cmd.getOptionValue("reducers"));
-			job.setReducerClass(Reducer.class);
+      //////////////////
+			job.setReducerClass(getReducerClass());
 			job.setNumReduceTasks(numReducers);
 		}
 		else{
 			job.setNumReduceTasks(1);
-			job.setReducerClass(Reducer.class);
+			//////////////////
+			job.setReducerClass(getReducerClass());
 		}
 
 		/** Set input and output formats */
@@ -127,7 +138,8 @@ public class Search extends Configured implements Tool {
 	 * according to its name and the date and content limitations
 	 * provided on input.
 	 * */
-	public static class Spinn3rInputFilter extends Configured implements PathFilter {
+  ////////////////// now non-static
+	public class Spinn3rInputFilter extends Configured implements PathFilter {
 		String formatInput = "yyyy-MM-dd'T'HH";
 		String formatFile = "yyyy-MM";
 		String formatFileDaily = "yyyy-MM-dd";
@@ -138,8 +150,9 @@ public class Search extends Configured implements Tool {
 		public Spinn3rInputFilter() throws FileNotFoundException, ParseException{
 
 			/** Parse job limitation form command line */
-			searchStart = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("start"));
-			searchEnd = new SimpleDateFormat(formatInput).parse(cmd.getOptionValue("end"));
+      //////////////////
+			searchStart = new SimpleDateFormat(formatInput).parse(getCommandLine().getOptionValue("start"));
+			searchEnd = new SimpleDateFormat(formatInput).parse(getCommandLine().getOptionValue("end"));
 			searchContent = Arrays.asList(cmd.getOptionValues("content"));
 		}
 
@@ -201,64 +214,6 @@ public class Search extends Configured implements Tool {
 		}
 	}
 
-	public static class Map extends Mapper<LongWritable, Text, Text, NullWritable> {
-		private CommandLine cmdMap;
-		private DocumentFilter filter;
-		long t1, t2;
-		boolean t;
-
-		@Override
-		public void setup(Context context){
-			t1 = System.nanoTime();
-			cmdMap = ParseCLI.parse(context.getConfiguration().getStrings("args"));
-			filter = new DocumentFilter(cmdMap);
-			t2 = System.nanoTime();
-			context.getCounter(ProcessingTime.SETUP).increment(t2-t1);
-		}
-
-		@Override
-		public void map(LongWritable key, Text value, Context context)
-				throws IOException, InterruptedException {
-			/** 
-			 * Parse document.
-			 * */
-			t1 = System.nanoTime();
-			Spinn3rDocument d = new Spinn3rDocument(value.toString());
-			t2 = System.nanoTime();
-			context.getCounter(ProcessingTime.PARSING).increment(t2-t1);
-
-			/**
-			 * Return only those documents that satisfy search conditions
-			 * */ 
-			t1 = System.nanoTime();
-			//TODO fix for large contents
-			if(d.content == null || (d.content != null && d.content.length() < 10000)){
-				t = filter.documentSatisfies(d);
-			}
-			else{
-				context.getCounter(ProcessingTime.SKIPPED).increment(1);
-				t = false;
-			}
-			t2 = System.nanoTime();
-			context.getCounter(ProcessingTime.FILTERING).increment(t2-t1);
-
-			/**
-			 * Output if satisfies
-			 * */
-			if (t){
-				if(cmdMap.hasOption("formatF5")){
-					context.write(new Text(d.toStringF5()), NullWritable.get());
-				}
-				else{
-					context.write(new Text(d.toString()), NullWritable.get());
-				}
-			}
-		}
-
-		@Override
-		public void cleanup(Context context){
-		}
-	}
 }
 
 /**
