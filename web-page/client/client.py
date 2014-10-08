@@ -1,12 +1,19 @@
 __author__ = 'Niko'
 
 HOST = 'snap.stanford.edu'  # Define which host in the .netrc file to use
-WORKING_DIRECTORY = "./running_job"
-HADOOP_OUT = 'hadoop-out.log'
-JOB_ID = 'jobID.txt'
-PID = 'pid.txt'
-URL = 'http://snap.stanford.edu/news-search/api/queue.php'
-COMMAND = 'hadoop jar /afs/cs.stanford.edu/u/niko/news-search/target/Spinn3rHadoop-0.0.1-SNAPSHOT.jar '
+CLIENT_DIR = '/home/newssearch/client'
+#CLIENT_DIR = './'
+SCRIPT_PID = '%s/pid' % CLIENT_DIR
+NETRC = '%s/.netrc' % CLIENT_DIR
+LOG_FILE = '%s/logClient.log' % CLIENT_DIR
+
+WORKING_DIR = "%s/running_job" % CLIENT_DIR
+HADOOP_OUT = '%s/hadoop-out.log' % WORKING_DIR
+JOB_ID = '%s/jobID.txt' % WORKING_DIR
+HADOOP_PID = '%s/pid.txt' % WORKING_DIR
+
+QUEUE = 'http://snap.stanford.edu/news-search/api/queue.php'
+COMMAND = '/usr/bin/hadoop jar %s/Spinn3rHadoop-0.0.1-SNAPSHOT.jar ' % CLIENT_DIR
 
 import re
 import os
@@ -17,21 +24,39 @@ import shutil
 import ntpath
 import logging
 import requests
+import datetime
 import subprocess
 
 # read username and password
-secrets = netrc.netrc('.netrc')
+secrets = netrc.netrc(NETRC)
 user, account, password = secrets.authenticators(HOST)
 
 # init logging
-FORMAT='%(asctime)s [%(levelname)s] %(message)s'
 # for production use INFO, to log status changes
 # for debugging use DEBUG, to se a lot more
-logging.basicConfig(filename='logClient.log', format=FORMAT, level=logging.INFO)
+LOG_FORMAT ='%(asctime)s [%(levelname)s] %(message)s'
+logging.basicConfig(filename=LOG_FILE, format=LOG_FORMAT, level=logging.INFO)
 # set the logging lever for requests module to WARNING
 # since at INFO it write a line for each requests!
+# urllib3 needed for the server!
 logging.getLogger('requests').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
 logging.debug('Client started')
+
+# check if an instance of the script is running
+# by checking for PID file
+if os.path.isfile(SCRIPT_PID):
+    ts = os.path.getmtime(SCRIPT_PID)
+    pid_time = datetime.datetime.fromtimestamp(ts)
+    diff_time = datetime.datetime.now() - pid_time
+    diff_time = diff_time.seconds
+    logging.error("STOPPING: Script PID already exists! "
+                  "PID was created %s seconds ago." % str(diff_time))
+    exit(-1)
+else:
+    # store PID
+    script_pid = str(os.getpid())
+    file(SCRIPT_PID, 'w').write(script_pid)
 
 
 def load_file(link_, fname_):
@@ -96,8 +121,8 @@ def get_pid():
         Read the pid from file.
     :return: pid
     """
-    if os.path.isfile(PID):
-        return int(open(PID).readline().strip())
+    if os.path.isfile(HADOOP_PID):
+        return int(open(HADOOP_PID).readline().strip())
     else:
         logging.error("PID file is missing!")
 
@@ -191,7 +216,7 @@ def update_state(job_id, status=None, tracking=None, progress=None, hadoop_out=N
     :return:    None
     """
     try:
-        url_ = URL + '/' + job_id
+        url_ = QUEUE + '/' + job_id
 
         # send URL
         data = {'action': 'update'}
@@ -222,9 +247,9 @@ def update_state(job_id, status=None, tracking=None, progress=None, hadoop_out=N
 #
 # STEP 1 - CLEAN START
 #
-if not os.path.exists(WORKING_DIRECTORY):
+if not os.path.exists(WORKING_DIR):
     # load json
-    r = requests.get(URL, auth=(user, password))
+    r = requests.get(QUEUE, auth=(user, password))
     if r.status_code != 200:
         logging.error("Got response with status code %s while polling for new job!" % r.status_code)
     jsonData = r.json()
@@ -232,8 +257,8 @@ if not os.path.exists(WORKING_DIRECTORY):
     # if there is a new job
     if jsonData['newJob']:
         # create folder
-        os.mkdir(WORKING_DIRECTORY)
-        os.chdir(WORKING_DIRECTORY)
+        os.mkdir(WORKING_DIR)
+        os.chdir(WORKING_DIR)
 
         # get and store id
         jobID = jsonData['jobID']
@@ -253,26 +278,25 @@ if not os.path.exists(WORKING_DIRECTORY):
         # read arguments, run the job and store PID
         arguments = read_command()
         p = subprocess.Popen(COMMAND + arguments + ' &> ' + HADOOP_OUT, shell=True)
-        write_to_file(PID, str(p.pid))
+        write_to_file(HADOOP_PID, str(p.pid))
 
         # set status to running
         logging.info("Job %s set to running." % jobID)
         update_state(jobID, status='running')
     else:
         logging.debug("No new job!")
-    exit(0)
 
 #
 # STEP 2 - UPDATING PROCESS AND CLEANING UP
 #
-elif os.path.isfile(WORKING_DIRECTORY+'/'+PID):
+elif os.path.isfile(HADOOP_PID):
 
     # move to working directory
-    os.chdir(WORKING_DIRECTORY)
+    os.chdir(WORKING_DIR)
 
     # get jobID and pid
     jobID = get_job_id()
-    pid = get_pid()
+    script_pid = get_pid()
 
     # update status
     url = get_tracking_url(HADOOP_OUT)
@@ -291,7 +315,7 @@ elif os.path.isfile(WORKING_DIRECTORY+'/'+PID):
 
         # the process should be done by now
         # just to be sure, wait till it is not gone
-        while check_pid(pid):
+        while check_pid(script_pid):
             time.sleep(1)
 
         # send hadoop out
@@ -300,4 +324,7 @@ elif os.path.isfile(WORKING_DIRECTORY+'/'+PID):
 
         # delete folder
         os.chdir('..')
-        shutil.rmtree(WORKING_DIRECTORY)
+        shutil.rmtree(WORKING_DIR)
+
+# remove Script PID file
+os.remove(SCRIPT_PID)
