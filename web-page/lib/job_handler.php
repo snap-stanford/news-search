@@ -8,6 +8,7 @@
 
 $QUEUE_PATH = '../api/queue/';
 $PUBLIC_FILES_LINK = 'http://snap.stanford.edu/news-search/api/queue/';
+$HDFS = 'http://ilhadoop1.stanford.edu:50070/explorer.html#/user/newssearch/';
 
 /**
  * Set logging
@@ -135,7 +136,8 @@ class Job{
     }
 
     public function get_results_link(){
-        return "http://ilhadoop1.stanford.edu:50070/explorer.html#/user/niko/".$this->id;
+        global $HDFS;
+        return $HDFS.$this->id;
     }
 
     public function set_start_date($date){
