@@ -398,6 +398,7 @@ public class ParseCLI {
 	}
 	
 	public static void printArguments(CommandLine in){
+		System.out.println("***** INPUT ARGUMENTS **********************************************************************************************************************************");
 		System.out.println("-output: " + in.getOptionValue("output"));
 		System.out.println("-reducers: " + (in.getOptionValues("reducers") !=null ? in.getOptionValue("reducers") : "null"));
 		System.out.println("-formatF5: " + in.hasOption("formatF5"));
@@ -424,6 +425,7 @@ public class ParseCLI {
 		System.out.println("-removeEmptyContent: " + in.hasOption("removeEmptyContent"));
 		System.out.println("-removeNoQuotes: " + in.hasOption("removeNoQuotes"));
 		System.out.println("-caseInsensitive: " + in.hasOption("caseInsensitive"));
+		System.out.println("***** END **********************************************************************************************************************************************");
 	}
 
 	public static void main(String [] args){

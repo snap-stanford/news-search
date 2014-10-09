@@ -17,6 +17,7 @@ import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument;
 public class Search extends AbstractSearch {
 
   public static class Map extends Mapper<LongWritable, Text, Text, NullWritable> {
+	private Integer MAX_CONTENT_LENGTH_FOR_FILTERING = 100000;
     private CommandLine cmdMap;
     private DocumentFilter filter;
     long t1, t2;
@@ -47,7 +48,7 @@ public class Search extends AbstractSearch {
        * */
       t1 = System.nanoTime();
       // TODO fix for large contents
-      if (d.content == null || (d.content != null && d.content.length() < 10000)) {
+      if (d.content == null || (d.content != null && d.content.length() < MAX_CONTENT_LENGTH_FOR_FILTERING)) {
         t = filter.documentSatisfies(d);
       } else {
         context.getCounter(ProcessingTime.SKIPPED).increment(1);

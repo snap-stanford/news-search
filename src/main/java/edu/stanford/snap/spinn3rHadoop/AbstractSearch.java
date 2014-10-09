@@ -91,9 +91,11 @@ public abstract class AbstractSearch extends Configured implements Tool {
 		//conf.set("mapreduce.task.profile.maps", "0-2");
 		//conf.set("mapreduce.task.profile.reduces", "0");
 
-		/** Delete output directory if it exists */
-		FileSystem fs = FileSystem.get(conf);
-		fs.delete(new Path(cmd.getOptionValue("output")), true);
+		/** Delete output directory if it exists, just for local debugging */
+		if(InetAddress.getLocalHost().getHostName().contains("Niko")){ 	
+			FileSystem fs = FileSystem.get(conf);
+			fs.delete(new Path(cmd.getOptionValue("output")), true);
+		}
 
 		/** Job configuration */
 		Job job = new Job(conf, getClass().getName());
@@ -173,6 +175,7 @@ public abstract class AbstractSearch extends Configured implements Tool {
 					e.printStackTrace();
 					System.exit(-1);
 				}
+				System.out.println("***** INPUT ********************************************************************************************************************************************");
 			}
 		}
 

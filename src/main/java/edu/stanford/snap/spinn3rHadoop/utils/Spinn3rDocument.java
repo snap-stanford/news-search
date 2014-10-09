@@ -143,8 +143,6 @@ public class Spinn3rDocument {
   }
 
   public void parseLine(String line) {
-    // end splitting by newline
-
     char type = line.charAt(0);
     String value = line.substring(2);
 
@@ -216,8 +214,8 @@ public class Spinn3rDocument {
   }
 
   /*
-   * Construct the Spinn3rDocument object from multi-line string. Used for parsing the documents
-   * stored in hadoop.
+   * Construct the Spinn3rDocument object from multi-line string. 
+   * Used for parsing the documents stored in Hadoop.
    */
   public Spinn3rDocument(String doc) {
     // we use String.indefOf() since it is faster than String.split() method
@@ -240,7 +238,8 @@ public class Spinn3rDocument {
   /*
    * Class for storing links about this record.
    * 
-   * A value of -1 for startPos/length means that the link appears in the title, not in the content.
+   * A value of -1 for startPos/length means that the 
+   * link appears in the title, not in the content.
    */
   public static class Link {
     public int startPos;
@@ -270,8 +269,8 @@ public class Spinn3rDocument {
   /*
    * Class for storing quotes about this record.
    * 
-   * A value of -1 for startPos/length means that the quote appears in the title, not in the
-   * content.
+   * A value of -1 for startPos/length means that the 
+   * quote appears in the title, not in the content.
    */
   public static class Quote {
     //
