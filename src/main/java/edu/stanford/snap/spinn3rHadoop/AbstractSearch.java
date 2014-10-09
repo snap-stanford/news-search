@@ -114,6 +114,8 @@ public abstract class AbstractSearch extends Configured implements Tool {
 			job.setNumReduceTasks(1);
 			job.setReducerClass(getReducerClass());
 		}
+		
+		/** Set reducers to start late, by default they start when 5% of mapers are done*/
 
 		/** Set input and output formats */
 		job.setInputFormatClass(TextInputFormat.class);

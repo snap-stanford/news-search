@@ -17,7 +17,7 @@ import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument;
 public class Search extends AbstractSearch {
 
   public static class Map extends Mapper<LongWritable, Text, Text, NullWritable> {
-	private Integer MAX_CONTENT_LENGTH_FOR_FILTERING = 100000;
+	private Integer MAX_CONTENT_LENGTH_FOR_FILTERING = 1000000;
     private CommandLine cmdMap;
     private DocumentFilter filter;
     long t1, t2;
