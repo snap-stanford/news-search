@@ -305,7 +305,7 @@ elif os.path.isfile(HADOOP_PID):
 
     # if the job is done
     e = get_exit_status(HADOOP_OUT)
-    if e is not None:
+    if e is not None or not check_pid(get_pid()):
         if e:
             update_state(jobID, status='success')
             logging.info("Job %s succeeded." % jobID)
