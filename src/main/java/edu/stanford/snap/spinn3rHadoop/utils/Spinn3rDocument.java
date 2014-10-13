@@ -25,6 +25,9 @@ public class Spinn3rDocument {
   public boolean isGarbled;
   public double nonGarbageFraction;
 
+  private boolean keepNonstandardLines;
+  public List<String> nonstandardLines;
+
   public enum Spinn3rVersion {
     A, B, C, D, E;
   }
@@ -103,6 +106,11 @@ public class Spinn3rDocument {
     for (Quote q : quotes) {
       str.append("Q\t").append(q.toString()).append("\n");
     }
+    if (keepNonstandardLines) {
+      for (String s : nonstandardLines) {
+        str.append(s).append("\n");
+      }
+    }
     return str.toString();
   }
 
@@ -138,6 +146,11 @@ public class Spinn3rDocument {
     }
     for (Quote q : quotes) {
       str.append("Q:").append(q.toString()).append("\t");
+    }
+    if (keepNonstandardLines) {
+      for (String s : nonstandardLines) {
+        str.append(s.charAt(0)).append(':').append(s.substring(2)).append("\t");
+      }
     }
     return str.toString();
   }
@@ -214,18 +227,37 @@ public class Spinn3rDocument {
   }
 
   /*
-   * Construct the Spinn3rDocument object from multi-line string. 
-   * Used for parsing the documents stored in Hadoop.
+   * Construct the Spinn3rDocument object from multi-line string. Used for parsing the documents
+   * stored in Hadoop.
    */
-  public Spinn3rDocument(String doc) {
-    // we use String.indefOf() since it is faster than String.split() method
+  public Spinn3rDocument(String doc, boolean keepNonstandardLines) {
+    this.keepNonstandardLines = keepNonstandardLines;
+    if (keepNonstandardLines) {
+      nonstandardLines = new ArrayList<String>();
+    }
+    // we use String.indexOf() since it is faster than String.split() method
     // append one final newline since the code below needs it
     doc = doc + '\n';
     int pos = 0, end;
     while ((end = doc.indexOf('\n', pos)) >= 0) {
-      parseLine(doc.substring(pos, end));
+      String line = doc.substring(pos, end);
+      try {
+        parseLine(line);
+      } catch (IllegalArgumentException e) {
+        if (keepNonstandardLines && line.charAt(0) >= 'A' && line.charAt(0) <= 'Z'
+            && line.charAt(1) == '\t') {
+          // If we want to keep nonstandard lines, store this one.
+          nonstandardLines.add(line);
+        } else {
+          // Otherwise ignore it.
+        }
+      }
       pos = end + 1;
     }
+  }
+
+  public Spinn3rDocument(String doc) {
+    this(doc, false);
   }
 
   /*
@@ -238,8 +270,7 @@ public class Spinn3rDocument {
   /*
    * Class for storing links about this record.
    * 
-   * A value of -1 for startPos/length means that the 
-   * link appears in the title, not in the content.
+   * A value of -1 for startPos/length means that the link appears in the title, not in the content.
    */
   public static class Link {
     public int startPos;
@@ -269,8 +300,8 @@ public class Spinn3rDocument {
   /*
    * Class for storing quotes about this record.
    * 
-   * A value of -1 for startPos/length means that the 
-   * quote appears in the title, not in the content.
+   * A value of -1 for startPos/length means that the quote appears in the title, not in the
+   * content.
    */
   public static class Quote {
     //
