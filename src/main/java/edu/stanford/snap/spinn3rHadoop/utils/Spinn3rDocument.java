@@ -246,7 +246,8 @@ public class Spinn3rDocument {
       } catch (IllegalArgumentException e) {
         if (keepNonstandardLines && line.charAt(0) >= 'A' && line.charAt(0) <= 'Z'
             && line.charAt(1) == '\t') {
-          // If we want to keep nonstandard lines, store this one.
+          // If we want to keep nonstandard lines, store this one (if it's of the form
+          // <LETTER><TAB>...).
           nonstandardLines.add(line);
         } else {
           // Otherwise ignore it.
@@ -257,7 +258,7 @@ public class Spinn3rDocument {
   }
 
   public Spinn3rDocument(String doc) {
-    this(doc, false);
+    this(doc, true);
   }
 
   /*

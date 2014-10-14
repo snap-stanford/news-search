@@ -122,8 +122,10 @@ public abstract class AbstractSearch extends Configured implements Tool {
 		job.setOutputFormatClass(TextOutputFormat.class);
 
 		/** Set input and output path */
-		if(InetAddress.getLocalHost().getHostName().contains("Niko")){ 	// for local debugging
-			FileInputFormat.addInputPath(job, new Path("input/*/*"));
+    //if(InetAddress.getLocalHost().getHostName().contains("Niko")){  // for local debugging
+    //  FileInputFormat.addInputPath(job, new Path("input/*/*"));
+    if(InetAddress.getLocalHost().getHostName().contains("ilws6")){  // for local debugging
+      FileInputFormat.addInputPath(job, new Path("/afs/cs.stanford.edu/u/west1/web-2010-08.txt"));
 			FileInputFormat.setInputPathFilter(job, Spinn3rInputFilter.class);
 		}
 		else{

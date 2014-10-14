@@ -39,7 +39,8 @@ public class Search extends AbstractSearch {
        * Parse document.
        * */
       t1 = System.nanoTime();
-      Spinn3rDocument d = new Spinn3rDocument(value.toString());
+      boolean keepNonstandardLines = cmdMap.hasOption("keepNonstandardLines");
+      Spinn3rDocument d = new Spinn3rDocument(value.toString(), keepNonstandardLines);
       t2 = System.nanoTime();
       context.getCounter(ProcessingTime.PARSING).increment(t2 - t1);
 
