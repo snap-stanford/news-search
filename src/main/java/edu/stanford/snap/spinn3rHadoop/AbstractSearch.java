@@ -92,7 +92,8 @@ public abstract class AbstractSearch extends Configured implements Tool {
 		//conf.set("mapreduce.task.profile.reduces", "0");
 
 		/** Delete output directory if it exists, just for local debugging */
-		if(InetAddress.getLocalHost().getHostName().contains("Niko")){ 	
+    //if(InetAddress.getLocalHost().getHostName().contains("Niko")){  
+    if(InetAddress.getLocalHost().getHostName().contains("Niko")){  
 			FileSystem fs = FileSystem.get(conf);
 			fs.delete(new Path(cmd.getOptionValue("output")), true);
 		}
@@ -125,7 +126,7 @@ public abstract class AbstractSearch extends Configured implements Tool {
     //if(InetAddress.getLocalHost().getHostName().contains("Niko")){  // for local debugging
     //  FileInputFormat.addInputPath(job, new Path("input/*/*"));
     if(InetAddress.getLocalHost().getHostName().contains("ilws6")){  // for local debugging
-      FileInputFormat.addInputPath(job, new Path("/afs/cs.stanford.edu/u/west1/web-2010-08.txt"));
+      FileInputFormat.addInputPath(job, new Path("/afs/cs.stanford.edu/u/west1/web-2008-08.txt"));
 			FileInputFormat.setInputPathFilter(job, Spinn3rInputFilter.class);
 		}
 		else{
