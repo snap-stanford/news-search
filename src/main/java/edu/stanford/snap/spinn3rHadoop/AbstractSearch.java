@@ -65,10 +65,16 @@ public abstract class AbstractSearch extends Configured implements Tool {
 
 	public abstract Class<? extends Mapper<? extends Writable, ? extends Writable, ? extends Writable, ? extends Writable>> getMapperClass();
 
-	@SuppressWarnings("rawtypes")
-	public Class<? extends Reducer> getReducerClass() {
-		return Reducer.class;
-	}
+  @SuppressWarnings("rawtypes")
+  public Class<? extends Reducer> getReducerClass() {
+    return Reducer.class;
+  }
+
+  // Return null if no combiner is to be used (the default).
+  @SuppressWarnings("rawtypes")
+  public Class<? extends Reducer> getCombinerClass() {
+    return null;
+  }
 
 	@Override
 	public int run(String[] args) throws Exception {
@@ -104,16 +110,20 @@ public abstract class AbstractSearch extends Configured implements Tool {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(NullWritable.class);
 
-		/** Set Mapper and Reducer, use identity reducer*/
+		/** Set Mapper, Combiner, and Reducer */
 		job.setMapperClass(getMapperClass());
+    job.setReducerClass(getReducerClass());
+    if (getCombinerClass() != null) {
+      job.setCombinerClass(getCombinerClass());
+    }
 		if(cmd.hasOption("reducers")){
 			int numReducers = Integer.valueOf(cmd.getOptionValue("reducers"));
-			job.setReducerClass(getReducerClass());
+			//job.setReducerClass(getReducerClass());
 			job.setNumReduceTasks(numReducers);
 		}
 		else{
 			job.setNumReduceTasks(1);
-			job.setReducerClass(getReducerClass());
+			//job.setReducerClass(getReducerClass());
 		}
 		
 		/** Set reducers to start late, by default they start when 5% of mapers are done*/
@@ -189,6 +199,12 @@ public abstract class AbstractSearch extends Configured implements Tool {
 		 * */
 		@Override
 		public boolean accept(Path path) {
+		  // DEBUG ///////////////////////////////////////////////////////////////////////////////
+		  if (path.getName().contains("web-2010-11")) {
+	      System.out.println(path.getName() + "\t" + "\t\t *** NOT OK ***\t for search time: " + searchStart + "-" + searchEnd);
+		    return false;
+		  }
+		  
 			String fileContent;
 			String fileStartString = null;
 			Calendar fileStart;
