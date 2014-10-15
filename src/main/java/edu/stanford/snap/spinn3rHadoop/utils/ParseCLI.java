@@ -314,10 +314,10 @@ public class ParseCLI {
 					+ "must not match with any of the patterns in Black list. "
 					+ "Matching with Black list overrides matching with White list. "
 					+ "When several arguments are present for a list there is the OR operator between them. "
-					+ "To use AND use &&. For example: 'black && white' will return documents that contain both words. \n"
-					+ "NOTICE: empty fields are treater separately, not with White lists. For example, if we search "
+					+ "To use AND use &&. For example: 'black&&white' will return documents that contain both words. \n"
+					+ "NOTICE: empty fields are treated separately, not with White lists. For example, if we search "
 					+ "for all documents with language 'en', by default all languages with no language detected will "
-					+ "also be in results. To change this use '-removeNoLanguage' option. Same hold for all other fields ass well.", options);
+					+ "also be in results. To change this use '-removeNoLanguage' option. Same hold for all other fields as well.", options);
 			cmd = null;
 		}
 		return cmd;

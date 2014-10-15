@@ -1,27 +1,15 @@
-news-search/api/queue.php GET => izpise queue
-
-
-news-search/api/queue.php/queue_id GET => vrne json za queue
-{ start_date: xxx;
-  lang_whitelist: http://snap/news... 
-}
-
-news-search/api/index.php/queue_id UPDATE => posljes json
+news-search/api/queue.php GET => returns new job if any along with the dependencies needed to run the job
 {
-  app_id: url
-  job_id: url
-  finished: true/false
-  progress: %
+    'newJob' => true/false,
+    'jobID' => $job->id ,
+    'dependencies' => <list_of_URLs>
 }
 
-
-/queue/2014....3/
-  -- _NEW
-  -- command
-  -- lang_whitelist.txt
-  ...
-  
-news-search/api/queue
-
-file_url: http://snap.stanford.edu/news-search/api/queue/2014..../lang_whitelist.txt
-
+news-search/api/queue.php/queue_id PUT => update the info about the runnign job
+{
+    'action': 'update',
+    'status': {'running', 'submitted', 'success', 'fail'}
+    'tracking': <tracking_URL>
+    'progress': <percentage_done_mapers percentage_done_reducers>
+    'hadoop_out': <hadoop_main_output>
+}
