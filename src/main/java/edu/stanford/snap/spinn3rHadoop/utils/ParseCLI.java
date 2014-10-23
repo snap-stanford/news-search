@@ -191,12 +191,9 @@ public class ParseCLI {
 		/**
 		 * Case insensitive matching
 		 * Use F5 output format
-		 * KeepNonstandardLines
 		 */
 		Option caseInsensitive = new Option("caseInsensitive", "Make all the matching case-insensitive.");
 		Option formatF5 = new Option("formatF5", "Use the F5 format for output.");
-		Option keepNonstandardLines = new Option("keepNonstandardLines", "If set, we keep the nonstandard (custom) lines, otherwise we ignore them. "
-				+ "Used for storing additional information about documents.");
 
 		CommandLine cmd = null;
 		Options options = new Options();
@@ -226,7 +223,6 @@ public class ParseCLI {
 		options.addOption(caseInsensitive);
 		options.addOption(formatF5);
 		options.addOption(reducers);
-		options.addOption(keepNonstandardLines);
 
 		try {
 			/** Parse */
@@ -429,7 +425,6 @@ public class ParseCLI {
 		System.out.println("-removeEmptyContent: " + in.hasOption("removeEmptyContent"));
 		System.out.println("-removeNoQuotes: " + in.hasOption("removeNoQuotes"));
 		System.out.println("-caseInsensitive: " + in.hasOption("caseInsensitive"));
-		System.out.println("-keepNonstandardLines: " + in.hasOption("keepNonstandardLines"));
 		System.out.println("***** END **********************************************************************************************************************************************");
 	}
 
