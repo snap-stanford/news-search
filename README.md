@@ -3,7 +3,13 @@
 This project contains the code for searching through our dataset of news, blog posts, Twitter and Facebook data using Hadoop.
 
 ## Structure
-* **src/** - the source code for Hadoop search job
+* **src/** - the source code for Hadoop search job (in packet **edu.stanford.snap.spinn3rHadoop**)
+	* **Search.java** - the *main* and *run* method for the Hadoop job
+	* **Spinn3rInputFilter.java** - decides which input files to process depending on the search date limitations
+	* **Spinn3rMaper.java** - mapper for Hadoop job: parse the record to Java object, checks if it satisfies search conditions and if it does write it to output
+	* **utils/ParseCLI.java** - parsing command line arguments
+	* **utils/DocumentFilter.java** - check if one document satisfies search contitions
+	* **utils/Spinn3rDocument.java** - converting strings to objects and back
 * **target/** - the Hadoop search job deployed to a runnable JAR
 * **web-page/** - the folder for everything connected with the web page
 	* **api/** - the REST api for communication with Hadoop client
