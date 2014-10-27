@@ -24,8 +24,8 @@ To run the search use `hadoop jar <path to the JAR> <additional arguments>`. The
 ## Development information
 To get the development environment up and running follow these steps:
  
-* make sure maven is installed
-* to add the Cloudera repository put the following configuration into the `${HOME}/.m2/settings.xml` file:
+1. make sure maven is installed
+2. to add the Cloudera repository put the following configuration into the `${HOME}/.m2/settings.xml` file:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
@@ -63,9 +63,9 @@ To get the development environment up and running follow these steps:
     </profiles>
 </settings>
 ```    
-* clone the project, navigate into its folder and run `mvn eclipse:eclipse` to make it an Eclipse project and get the dependency JARs
-* open Eclipse and import it using `File > Import > Existing Projects into Workspace` then `Select root directory` and click `Finish`.
-* to run the code locally navigate into `Search.java` and run it as java application
+3. clone the project, navigate into its folder and run `mvn eclipse:eclipse` to make it an Eclipse project and get the dependency JARs
+4. open Eclipse and import it using `File > Import > Existing Projects into Workspace` then `Select root directory` and click `Finish`.
+5. to run the code locally navigate into `Search.java` and run it as java application
 
 To compile the code into a JAR which can be run on Hadoop cluster use `mvn clean package` and  the JAR will be compiled and put into `target` directory.   
 
