@@ -27,9 +27,9 @@ To get the development environment up and running follow these steps:
 1. make sure maven is installed
 2. to add the Cloudera repository put the following configuration into the `${HOME}/.m2/settings.xml` file:
 	```xml
-	<?xml version="1.0" encoding="UTF-8"?>
-	<settings>
-    	<profiles>
+		<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <profiles>
         <profile>
             <id>standard-extra-repos</id>
             <activation>
@@ -60,8 +60,8 @@ To get the development environment up and running follow these steps:
                 </repository>
             </repositories>
         </profile>
-    	</profiles>
-	</settings>
+    </profiles>
+</settings>
 	```
 3. clone the project, navigate into its folder and run `mvn eclipse:eclipse` to make it an Eclipse project and get the dependency JARs
 4. open Eclipse and import it using `File > Import > Existing Projects into Workspace` then `Select root directory` and click `Finish`.
