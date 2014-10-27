@@ -27,7 +27,7 @@ To get the development environment up and running follow these steps:
 1. make sure maven is installed
 2. to add the Cloudera repository put the following configuration into the `${HOME}/.m2/settings.xml` file:
 
-    <!-- language: xml -->        
+<!-- language: xml -->        
         <?xml version="1.0" encoding="UTF-8"?>
         <settings>
             <profiles>
