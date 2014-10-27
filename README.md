@@ -26,44 +26,43 @@ To get the development environment up and running follow these steps:
  
 1. make sure maven is installed
 2. to add the Cloudera repository put the following configuration into the `${HOME}/.m2/settings.xml` file:
-
-     <!-- language: xml -->
-        <?xml version="1.0" encoding="UTF-8"?>
-        <settings>
-            <profiles>
-                <profile>
-                    <id>standard-extra-repos</id>
-                    <activation>
-                        <activeByDefault>true</activeByDefault>
-                    </activation>
-                    <repositories>
-                        <repository>
-                            <!-- Central Repository -->
-                            <id>central</id>
-                            <url>http://repo1.maven.org/maven2/</url>
-                            <releases>
-                                <enabled>true</enabled>
-                            </releases>
-                            <snapshots>
-                                <enabled>true</enabled>
-                            </snapshots>
-                        </repository>
-                        <repository>
-                            <!-- Cloudera Repository -->
-                            <id>cloudera</id>
-                            <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-                            <releases>
-                                <enabled>true</enabled>
-                            </releases>
-                            <snapshots>
-                                <enabled>true</enabled>
-                           </snapshots>
-                        </repository>
-                    </repositories>
-                </profile>
-            </profiles>
-        </settings>
-
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <profiles>
+        <profile>
+            <id>standard-extra-repos</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <!-- Central Repository -->
+                    <id>central</id>
+                    <url>http://repo1.maven.org/maven2/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <!-- Cloudera Repository -->
+                    <id>cloudera</id>
+                    <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                   </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+</settings>
+```    
 3. clone the project, navigate into its folder and run `mvn eclipse:eclipse` to make it an Eclipse project and get the dependency JARs
 4. open Eclipse and import it using `File > Import > Existing Projects into Workspace` then `Select root directory` and click `Finish`.
 5. to run the code locally navigate into `Search.java` and run it as java application
