@@ -22,9 +22,56 @@ This project contains the code for searching through our dataset of news, blog p
 To run the search use `hadoop jar <path to the JAR> <additional arguments>`. There are several arguments required. To see help, just run the command without any additional arguments. 
 
 ## Development information
-The project was built following [these](http://hadoopi.wordpress.com/2013/05/25/setup-maven-project-for-hadoop-in-5mn/) instructions. In order to get the development environment working you have to edit `${HOME}/.m2/settings.xml`, as described in the given web page.
+To get the development environment up and running follow these steps:
+ 
+   1. make sure maven is installed
+   2. to add the Cloudera repository put the following configuration into the `${HOME}/.m2/settings.xml` file:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <profiles>
+        <profile>
+            <id>standard-extra-repos</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <!-- Central Repository -->
+                    <id>central</id>
+                    <url>http://repo1.maven.org/maven2/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <!-- Cloudera Repository -->
+                    <id>cloudera</id>
+                    <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                   </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+</settings>```
+   
+   3.  clone the project, navigate into its folder and run `mvn eclipse:eclipse` to make it an Eclipse project and get the dependency JARs
+   4.  open Eclipse and import it using `File > Import > Existing Projects into Workspace` then `Select root directory` and click `Finish`.
+   5.  to run the code locally navigate into `Search.java` and run it as java application
 
-The code can be recompiled using `mvn clean package`.
+To compile the code into a JAR which can be run on Hadoop cluster use `mvn clean package` and  the JAR will be compiled and put into `target` directory.   
+
+#### Additional links
+
+The project was built following [these](http://hadoopi.wordpress.com/2013/05/25/setup-maven-project-for-hadoop-in-5mn/) instructions.
 
 An other great tutorial could be found [here](http://blog.cloudera.com/blog/2012/08/developing-cdh-applications-with-maven-and-eclipse/).
 
