@@ -14,7 +14,7 @@ import edu.stanford.snap.spinn3rHadoop.utils.ParseCLI;
 import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument;
 
 public class Spinn3rMaper extends Mapper<LongWritable, Text, Text, NullWritable> {
-	private Integer MAX_CONTENT_LENGTH_FOR_FILTERING = 1000000;
+	private Integer MAX_DOC_SIZE_IN_BYTES = 10*1024*1024;	// 10MB
 	private CommandLine cmdMap;
 	private DocumentFilter filter;
 	long t1, t2;
@@ -35,6 +35,14 @@ public class Spinn3rMaper extends Mapper<LongWritable, Text, Text, NullWritable>
 	public void map(LongWritable key, Text value, Context context) throws IOException,
 	InterruptedException {
 		/**
+		 * Skip enormous documents, due to memory problems and since regex cannot handle them.
+		 * */
+		if(value.getLength() > MAX_DOC_SIZE_IN_BYTES){
+			context.getCounter(ProcessingTime.SKIPPED).increment(1);
+			return;
+		}
+			
+		/**
 		 * Parse document and measure time
 		 * */
 		t1 = System.nanoTime();
@@ -46,13 +54,7 @@ public class Spinn3rMaper extends Mapper<LongWritable, Text, Text, NullWritable>
 		 * Return only those documents that satisfy search conditions
 		 * */
 		t1 = System.nanoTime();
-		/** We skip files with VERY large content, since regex are not able to handle them */
-		if (d.content == null || (d.content != null && d.content.length() < MAX_CONTENT_LENGTH_FOR_FILTERING)) {
-			t = filter.documentSatisfies(d);
-		} else {
-			t = false;
-			context.getCounter(ProcessingTime.SKIPPED).increment(1);
-		}
+		t = filter.documentSatisfies(d);
 		t2 = System.nanoTime();
 		context.getCounter(ProcessingTime.FILTERING).increment(t2-t1);
 
