@@ -23,6 +23,8 @@ import org.apache.commons.cli.*;
  * */
 
 public class ParseCLI {	
+	
+	public static final String CONTENT_CLEANER_INCLUDE_SPECUAL_CHAR = "all";
 	private static int MAX_ARGUMENTS = 10000;
 	private static List<String> ALLOWED_LANGUAGESE = Arrays.asList("af", "ar", "bg", "bn", "cs", "da", "de", "el", "en", "es", "et", "fa", "fi", 
 		"fr", "gu", "he", "hi", "hr", "hu", "id", "it", "ja", "kn", "ko", "lt", "lv", "mk", "ml", "mr", "ne", "nl", "no", "pa", 
@@ -194,6 +196,14 @@ public class ParseCLI {
 		 */
 		Option caseInsensitive = new Option("caseInsensitive", "Make all the matching case-insensitive.");
 		Option formatF5 = new Option("formatF5", "Use the F5 format for output.");
+		
+		/***
+		 * Use cleaner to clean a content
+		 * */
+		Option cleaner = OptionBuilder.withArgName("contentCleaner")
+				.hasOptionalArg()
+				.withDescription("Remove css, html, wordpress tags from content. Optional arg value is '" + CONTENT_CLEANER_INCLUDE_SPECUAL_CHAR + "', which also removes all special characters('?') from content")
+				.create("contentCleaner");
 
 		CommandLine cmd = null;
 		Options options = new Options();
@@ -223,6 +233,7 @@ public class ParseCLI {
 		options.addOption(caseInsensitive);
 		options.addOption(formatF5);
 		options.addOption(reducers);
+		options.addOption(cleaner);
 
 		try {
 			/** Parse */
@@ -301,6 +312,14 @@ public class ParseCLI {
 				}
 				if(Integer.valueOf(num) < 0){
 					throw new ParseException("Number of reducers should be a positive number!");
+				}
+			}
+			
+			/** Check number of reducers */
+			if(cmd.hasOption("contentCleaner")){
+				String cleanerArg = cmd.getOptionValue("contentCleaner");
+				if (cleanerArg != null && !cleanerArg.equals(CONTENT_CLEANER_INCLUDE_SPECUAL_CHAR)) {
+					throw new ParseException("The only valid arg value for contentCleaner is '" + CONTENT_CLEANER_INCLUDE_SPECUAL_CHAR + "', otherwise keep the value emply.");
 				}
 			}
 
@@ -425,6 +444,7 @@ public class ParseCLI {
 		System.out.println("-removeEmptyContent: " + in.hasOption("removeEmptyContent"));
 		System.out.println("-removeNoQuotes: " + in.hasOption("removeNoQuotes"));
 		System.out.println("-caseInsensitive: " + in.hasOption("caseInsensitive"));
+		System.out.println("-contentCleaner: " + (in.hasOption("contentCleaner") ? (in.getOptionValue("contentCleaner") != null ? in.getOptionValue("contentCleaner") : in.hasOption("contentCleaner")) : false));
 		System.out.println("***** END **********************************************************************************************************************************************");
 	}
 
