@@ -29,13 +29,13 @@ public class ContentCleaner {
 			Pattern pattern = Pattern.compile(HTML_PATTERN1);
 			Matcher matcher = pattern.matcher(htmlString);
 			if (matcher.find()) {
-				textSplited[i] = textSplited[i].substring(0, beginIndex) + textSplited[i].substring(beginIndex, matcher.start());
+				textSplited[i] = textSplited[i].substring(0, beginIndex) + textSplited[i].substring(beginIndex, beginIndex + matcher.start());
 			}
 			else {
 				pattern = Pattern.compile(HTML_PATTERN2);
 				matcher = pattern.matcher(htmlString);
 				if (matcher.find()) {
-					textSplited[i] = textSplited[i].substring(0, beginIndex) + textSplited[i].substring(beginIndex, matcher.start());
+					textSplited[i] = textSplited[i].substring(0, beginIndex) + textSplited[i].substring(beginIndex, beginIndex + matcher.start());
 				}
 			}
 		}
@@ -52,6 +52,10 @@ public class ContentCleaner {
 	}
 	
 	public static int cleanContent(Spinn3rDocument doc, boolean includeCharacters) {
+		if (doc.content == null) {
+			return 0;
+		}
+		
 		String content = doc.content;
 		
 		ContentCleaner cc = new ContentCleaner();

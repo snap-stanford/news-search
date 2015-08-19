@@ -177,6 +177,7 @@ public class ParseCLI {
 		 * 		- empty title
 		 * 		- empty content
 		 * 		- no quotes
+		 * 		- spam content
 		 *  */
 		Option removeVersions = OptionBuilder.withArgName("removeVersions")
 				//.isRequired()
@@ -189,6 +190,7 @@ public class ParseCLI {
 		Option removeEmptyTitle = new Option("removeEmptyTitle", "Remove documents with empty title.");
 		Option removeEmptyContent = new Option("removeEmptyContent", "Remove documents with empty content.");
 		Option removeNoQuotes = new Option("removeNoQuotes", "Remove documents without quotes.");
+		Option removeSpam = new Option("removeSpam", "Remove documents which content is classified as spam.");
 		
 		/**
 		 * Case insensitive matching
@@ -234,6 +236,7 @@ public class ParseCLI {
 		options.addOption(formatF5);
 		options.addOption(reducers);
 		options.addOption(cleaner);
+		options.addOption(removeSpam);
 
 		try {
 			/** Parse */
@@ -445,6 +448,7 @@ public class ParseCLI {
 		System.out.println("-removeNoQuotes: " + in.hasOption("removeNoQuotes"));
 		System.out.println("-caseInsensitive: " + in.hasOption("caseInsensitive"));
 		System.out.println("-contentCleaner: " + (in.hasOption("contentCleaner") ? (in.getOptionValue("contentCleaner") != null ? in.getOptionValue("contentCleaner") : in.hasOption("contentCleaner")) : false));
+		System.out.println("-removeSpam: " + in.hasOption("removeSpam"));
 		System.out.println("***** END **********************************************************************************************************************************************");
 	}
 

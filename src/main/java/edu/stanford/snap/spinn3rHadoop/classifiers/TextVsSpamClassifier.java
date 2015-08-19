@@ -34,6 +34,9 @@ public class TextVsSpamClassifier implements Classifier {
 	
 	@Override
 	public String getClass(Spinn3rDocument doc) {
+		if (doc.content == null) {
+			return SPAM;
+		}
 		int numSentences = getNumberOfSentences(doc.content);
 		int numWords = getNumberOfWords(doc.content);
 		double relNumOfStopwords = getRelativeNumberOfStopwords(doc.content);

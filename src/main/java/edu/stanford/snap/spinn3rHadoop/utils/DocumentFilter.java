@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.mapred.CleanupQueue;
 
+import edu.stanford.snap.spinn3rHadoop.classifiers.Classifier;
+import edu.stanford.snap.spinn3rHadoop.classifiers.TextVsSpamClassifier;
 import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument.Quote;
 
 /**
@@ -54,6 +56,7 @@ public class DocumentFilter {
 	protected boolean removeEmptyTitle;
 	protected boolean removeEmptyContent;
 	protected boolean removeNoQuotes;
+	protected boolean removeSpam;
 	protected boolean caseInsensitive;
 	protected String contentCleaner;
 	protected Date start;
@@ -75,6 +78,7 @@ public class DocumentFilter {
 		this.removeEmptyTitle = cmd.hasOption("removeEmptyTitle");
 		this.removeEmptyContent = cmd.hasOption("removeEmptyContent");
 		this.removeNoQuotes = cmd.hasOption("removeNoQuotes");
+		this.removeSpam = cmd.hasOption("removeSpam");
 		this.caseInsensitive = cmd.hasOption("caseInsensitive");
 		this.contentCleaner = cmd.hasOption("contentCleaner") ? (cmd.getOptionValue("contentCleaner") == null ? "" : cmd.getOptionValue("contentCleaner")) : null;
 
@@ -276,6 +280,13 @@ public class DocumentFilter {
 		 * */
 		if(removeVersions != null && removeVersions.length > 0){
 			if(Arrays.asList(removeVersions).contains(d.version.name())){
+				return false;
+			}
+		}
+		
+		if (removeSpam) {
+			TextVsSpamClassifier classifier = new TextVsSpamClassifier();
+			if (!classifier.getClass(d).equals(classifier.TEXT)) {
 				return false;
 			}
 		}
