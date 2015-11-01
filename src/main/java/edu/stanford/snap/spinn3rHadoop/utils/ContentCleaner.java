@@ -22,18 +22,20 @@ public class ContentCleaner {
 			return text;
 		
 		String[] textSplited = text.split(">");
+		Pattern pattern = Pattern.compile(HTML_PATTERN1);
+		Pattern pattern2 = Pattern.compile(HTML_PATTERN2);
 		for (int i = 0; i < textSplited.length; i++) {
 			int beginIndex = (textSplited[i].length() > HTML_WINDOW_SIZE) ? textSplited[i].length() - HTML_WINDOW_SIZE : 0;
 			String htmlString = textSplited[i].substring(beginIndex);
 			
-			Pattern pattern = Pattern.compile(HTML_PATTERN1);
+			
 			Matcher matcher = pattern.matcher(htmlString);
 			if (matcher.find()) {
 				textSplited[i] = textSplited[i].substring(0, beginIndex) + textSplited[i].substring(beginIndex, beginIndex + matcher.start());
 			}
 			else {
-				pattern = Pattern.compile(HTML_PATTERN2);
-				matcher = pattern.matcher(htmlString);
+				
+				matcher = pattern2.matcher(htmlString);
 				if (matcher.find()) {
 					textSplited[i] = textSplited[i].substring(0, beginIndex) + textSplited[i].substring(beginIndex, beginIndex + matcher.start());
 				}
