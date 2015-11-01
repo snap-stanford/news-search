@@ -4,7 +4,7 @@ This is a simple classifier which classify Spinn3r web articles as text or spam.
 
 ## Decision tree 
 
-![alt text](https://github.com/andrazhribernik/news-search/blob/content-cleaner/src/main/java/edu/stanford/snap/spinn3rHadoop/classifiers/sample-data/TextVsSpamDecisionTree.png "Classifier decision tree image.")
+![alt text](sample-data/TextVsSpamDecisionTree.png "Classifier decision tree image.")
 
 Leafs that are marked with red color have been pruned in final implementation of TextVsSpamClassifier.java. 
 
