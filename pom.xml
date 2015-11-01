@@ -90,7 +90,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>Spinn3rHadoop-0.0.1-SNAPSHOT</finalName>
+		<finalName>Spinn3rHadoop-0.0.2-SNAPSHOT</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

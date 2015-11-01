@@ -212,18 +212,6 @@ public class DocumentFilter {
 			return false;
 		}
 		
-		/** Clean content if cleanContent is set
-		 * 
-		 */
-		if (contentCleaner != null) {
-			if (contentCleaner.equals(ParseCLI.CONTENT_CLEANER_INCLUDE_SPECUAL_CHAR)) {
-				ContentCleaner.cleanContent(d, true);
-			}
-			else {
-				ContentCleaner.cleanContent(d);
-			}
-		}
-		
 		/** 
 		 * Filter by keywords:
 		 * */
@@ -288,6 +276,18 @@ public class DocumentFilter {
 			TextVsSpamClassifier classifier = new TextVsSpamClassifier();
 			if (!classifier.getClass(d).equals(classifier.TEXT)) {
 				return false;
+			}
+		}
+		
+		/** Clean content if cleanContent is set
+		 * 
+		 */
+		if (contentCleaner != null) {
+			if (contentCleaner.equals(ParseCLI.CONTENT_CLEANER_INCLUDE_SPECUAL_CHAR)) {
+				ContentCleaner.cleanContent(d, true);
+			}
+			else {
+				ContentCleaner.cleanContent(d);
 			}
 		}
 
