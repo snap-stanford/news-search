@@ -11,7 +11,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.hadoop.mapred.CleanupQueue;
 
+import edu.stanford.snap.spinn3rHadoop.classifiers.Classifier;
+import edu.stanford.snap.spinn3rHadoop.classifiers.TextVsSpamClassifier;
 import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument.Quote;
 
 /**
@@ -53,7 +56,9 @@ public class DocumentFilter {
 	protected boolean removeEmptyTitle;
 	protected boolean removeEmptyContent;
 	protected boolean removeNoQuotes;
+	protected boolean removeSpam;
 	protected boolean caseInsensitive;
+	protected String contentCleaner;
 	protected Date start;
 	protected Date end;
 
@@ -73,7 +78,9 @@ public class DocumentFilter {
 		this.removeEmptyTitle = cmd.hasOption("removeEmptyTitle");
 		this.removeEmptyContent = cmd.hasOption("removeEmptyContent");
 		this.removeNoQuotes = cmd.hasOption("removeNoQuotes");
+		this.removeSpam = cmd.hasOption("removeSpam");
 		this.caseInsensitive = cmd.hasOption("caseInsensitive");
+		this.contentCleaner = cmd.hasOption("contentCleaner") ? (cmd.getOptionValue("contentCleaner") == null ? "" : cmd.getOptionValue("contentCleaner")) : null;
 
 		if(cmd.getOptionValues("langWL") != null)
 			this.langWL = cmd.getOptionValues("langWL");
@@ -264,6 +271,25 @@ public class DocumentFilter {
 				return false;
 			}
 		}
+		
+		if (removeSpam) {
+			TextVsSpamClassifier classifier = new TextVsSpamClassifier();
+			if (!classifier.getClass(d).equals(classifier.TEXT)) {
+				return false;
+			}
+		}
+		
+		/** Clean content if cleanContent is set
+		 * 
+		 */
+		if (contentCleaner != null) {
+			if (contentCleaner.equals(ParseCLI.CONTENT_CLEANER_INCLUDE_SPECUAL_CHAR)) {
+				ContentCleaner.cleanContent(d, true);
+			}
+			else {
+				ContentCleaner.cleanContent(d);
+			}
+		}
 
 		/** If we get to here than d satisfied all conditions. */
 		return true;
@@ -278,7 +304,7 @@ public class DocumentFilter {
 				+ "U	http://times.com/KB/silverlight/convertsilverlightcontrol.aspx\n"
 				+ "D	2013-09-02 17:00:00\n"
 				+ "T	codeproject how to convert a silverlight control to a visual webgui \n"
-				+ "C	how to convert a silverlight control to \n"
+				+ "C	how to convert a silverlight control to [simple wordpress tag] \n"
 				+ "L	1206		http://schemas.microsoft.com/winfx/2006/xaml/presentation\n"
 				+ "L	1211		http://schemas.microsoft.com/winfx/2006/xaml\n"
 				+ "Q	948	69	how to create property binding in a visual webgui silverlight control\n"
@@ -299,5 +325,8 @@ public class DocumentFilter {
 		DocumentFilter filter = new DocumentFilter(cmd);
 		Spinn3rDocument d = new Spinn3rDocument(documentString);
 		System.out.println("This document passed search conditions: " + filter.documentSatisfies(d));
+		System.out.println("\nIf contentClenaner is true, content should change\n" + d.content);
+		
+		
 	}
 }

@@ -8,7 +8,7 @@
 
 	<groupId>edu.stanford.snap.spinn3rHadoop</groupId>
 	<artifactId>Spinn3rHadoop</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>HadoopSearch</name>
@@ -90,7 +90,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>Spinn3rHadoop-0.0.1-SNAPSHOT</finalName>
+		<finalName>Spinn3rHadoop-0.0.2-SNAPSHOT</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

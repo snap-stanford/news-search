@@ -28,6 +28,10 @@ public class Spinn3rDocument {
 	public enum Spinn3rVersion {
 		A, B, C, D, E;
 	}
+	
+	public void setContent(String content) {
+		this.content = content;
+	}
 
 	public enum ContentType {
 		WEB, TWITTER, FACEBOOK;
