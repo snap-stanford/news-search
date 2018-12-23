@@ -9,6 +9,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import edu.stanford.snap.spinn3rHadoop.Search.ProcessingTime;
+import edu.stanford.snap.spinn3rHadoop.Search.Skipped;
 import edu.stanford.snap.spinn3rHadoop.utils.DocumentFilter;
 import edu.stanford.snap.spinn3rHadoop.utils.ParseCLI;
 import edu.stanford.snap.spinn3rHadoop.utils.Spinn3rDocument;
@@ -38,7 +39,7 @@ public class Spinn3rMaper extends Mapper<LongWritable, Text, Text, NullWritable>
 		 * Skip enormous documents, due to memory problems and since regex cannot handle them.
 		 * */
 		if(value.getLength() > MAX_DOC_SIZE_IN_BYTES){
-			context.getCounter(ProcessingTime.SKIPPED).increment(1);
+			context.getCounter(Skipped.SIZE_TOO_LARGE).increment(1);
 			return;
 		}
 			
@@ -49,6 +50,14 @@ public class Spinn3rMaper extends Mapper<LongWritable, Text, Text, NullWritable>
 		Spinn3rDocument d = new Spinn3rDocument(value.toString());
 		t2 = System.nanoTime();
 		context.getCounter(ProcessingTime.PARSING).increment(t2-t1);
+
+		/**
+		 * Skip documents without a date as we cannot determine if they fall within the time restrictions.
+		 * */
+		if(d.date == null){
+			context.getCounter(Skipped.DATE_MISSING).increment(1);
+			return;
+		}
 
 		/**
 		 * Return only those documents that satisfy search conditions

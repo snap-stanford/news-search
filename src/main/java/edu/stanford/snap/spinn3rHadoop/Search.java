@@ -29,8 +29,12 @@ public class Search extends Configured implements Tool {
 	public enum ProcessingTime {
 		PARSING,
 		FILTERING,
-		SETUP,
-		SKIPPED
+		SETUP
+	}
+
+	public enum Skipped {
+		SIZE_TOO_LARGE,
+		DATE_MISSING
 	}
 
 	public static void main(String[] args) throws Exception {

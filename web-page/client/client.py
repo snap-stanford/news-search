@@ -13,7 +13,7 @@ JOB_ID = '%s/jobID.txt' % WORKING_DIR
 HADOOP_PID = '%s/pid.txt' % WORKING_DIR
 
 QUEUE = 'http://snap.stanford.edu/news-search/api/queue.php'
-COMMAND = '/usr/bin/hadoop jar %s/Spinn3rHadoop-0.0.1-SNAPSHOT.jar ' % CLIENT_DIR
+COMMAND = '/usr/bin/hadoop jar %s/Spinn3rHadoop-0.0.2-SNAPSHOT.jar ' % CLIENT_DIR
 
 import re
 import os
